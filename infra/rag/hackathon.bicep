@@ -870,6 +870,10 @@ var credentialsEnv = [
     secretRef: 'azuresearchkey'
   }
   {
+    name: 'AZURE_SEARCH_ADMIN_KEY'
+    secretRef: 'azuresearchkey'
+  }
+  {
     name: 'MOCKSTOCK_DATABASE_URL'
     secretRef: 'mockstock-databaseconnectionstring'
   }

@@ -75,6 +75,7 @@ output AZURE_RESOURCE_GROUP string = resourceGroupName
 output AZURE_SEARCH_ENDPOINT string = hackathon.outputs.AZURE_SEARCH_ENDPOINT
 output AZURE_SEARCH_INDEX string = hackathon.outputs.AZURE_SEARCH_INDEX
 output AZURE_SEARCH_KEY string = hackathon.outputs.AZURE_SEARCH_KEY
+output AZURE_SEARCH_ADMIN_KEY string = hackathon.outputs.AZURE_SEARCH_KEY
 output AZURE_SQL_ACCESS string = hackathon.outputs.AZURE_SQL_ACCESS
 output AZURE_SQL_DATABASE string = hackathon.outputs.AZURE_SQL_DATABASE
 output AZURE_SQL_SERVER string = hackathon.outputs.AZURE_SQL_SERVER
