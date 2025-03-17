@@ -17,6 +17,12 @@ key_credential = os.environ["AZURE_SEARCH_ADMIN_KEY"] if len(os.environ["AZURE_S
 
 class RagAssistant:
     def __init__(self):
+        print('init embendding')
+        print(os.getenv("AZURE_OPENAI_EMBEDDING"))
+        print(os.getenv("AZURE_OPENAI_API_VERSION"))
+        print(os.getenv("AZURE_OPENAI_ENDPOINT"))
+        print(os.getenv("AZURE_OPENAI_API_KEY"))
+        
         embeddings = AzureOpenAIEmbeddings(
             model = os.getenv("AZURE_OPENAI_EMBEDDING"),
             openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION"),
