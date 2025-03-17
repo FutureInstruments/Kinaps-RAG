@@ -12,7 +12,7 @@ import re
 import json
 from typing import Any, List
 from langchain_text_splitters.base import TextSplitter
-from langchain_community.vectorstores import AzureSearch
+from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from langchain.schema import Document
@@ -43,6 +43,7 @@ AZURE_OPENAI_SYSTEM_MESSAGE = ("You are an assistant for question-answering task
 #########################################################
 def create_multimodal_vector_store(index_name: str, azure_openai_api_key: str, azure_openai_endpoint: str, azure_openai_api_version: str, azure_openai_embedding_deployment: str, azure_search_endpoint: str, azure_search_api_key: str) -> AzureSearch:
     # Create the embedding client
+    print('start creating MMS')
     aoai_embeddings = AzureOpenAIEmbeddings(
     api_key= azure_openai_api_key,
     azure_deployment=azure_openai_embedding_deployment,
@@ -81,6 +82,13 @@ def create_multimodal_vector_store(index_name: str, azure_openai_api_key: str, a
             name="header",
             type=SearchFieldDataType.String,
             searchable=True,
+        ),
+        # Additional field for filtering on document source
+        SimpleField(
+            name="source",
+            type=SearchFieldDataType.String,
+            filterable=True,
+            searchable=False,
         ),
         # Additional field for filtering on document source
         SimpleField(

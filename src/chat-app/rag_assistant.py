@@ -2,8 +2,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-
-
 from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
@@ -17,14 +15,8 @@ from its_a_rag.ingestion import *
 key_credential = os.environ["AZURE_SEARCH_ADMIN_KEY"] if len(os.environ["AZURE_SEARCH_ADMIN_KEY"]) > 0 else None
 
 
-class Assistant:
+class RagAssistant:
     def __init__(self):
-        model = AzureChatOpenAI(
-                streaming=True,
-                api_version=os.getenv('AZURE_OPENAI_API_VERSION'),
-                deployment_name=os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')
-                )
-        
         embeddings = AzureOpenAIEmbeddings(
             model = os.getenv("AZURE_OPENAI_EMBEDDING"),
             openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION"),
@@ -103,40 +95,30 @@ class Assistant:
             max_retries=2
         )
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "You're a very knowledgeable financial analyst who provides accurate and eloquent answers to financial questions.",
-                ),
-                ("human", "{question}"),
+        
+
+        def format_docs(docs):
+            print('JOIN PAGE CONTENT')
+            return "\n\n".join(doc.page_content for doc in docs)
+
+        # Use the ChatPromptTemplate to define the prompt that will be sent to the model (Human) remember to include the question and the context
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. "),
+            ("user", "Question: {question}"),
+            ("system", "Context: {context} Answer:"),
             ]
         )
-        self.runnable = prompt | model | StrOutputParser()
 
+        # Define the Chain to get the answer
+        self.runnable = (
+            {'context': retriever | format_docs, 'question': RunnablePassthrough() }
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
 
-
-        # def format_docs(docs):
-        #     print('JOIN PAGE CONTENT')
-        #     return "\n\n".join(doc.page_content for doc in docs)
-        
-        # # Use the ChatPromptTemplate to define the prompt that will be sent to the model (Human) remember to include the question and the context
-        # prompt = ChatPromptTemplate.from_messages([
-        #     ("system", "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. "),
-        #     ("human", "Question: {question}"),
-        #     ("system", "Context: {context} Answer:"),
-        #     ]
-        # )
-        # # Define the Chain to get the answer
-        # self.runnable = (
-        #     {'context': retriever | format_docs }
-        #     | prompt
-        #     | llm
-        #     | StrOutputParser()
-        # )
-        
     def astream(self, content, config):
-        return self.runnable.astream({ "question": content }, config)
+        return self.runnable.astream(content, config)
 
     def invoke(self, content):
-        return self.runnable.invoke({ "question": content })
+        return self.runnable.invoke(content)

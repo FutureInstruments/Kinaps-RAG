@@ -7,6 +7,9 @@ azure-search-documents ~= 11.5.1
 azure-identity ~= 1.18.0
 langgraph ~= 0.2.32
 pymssql~=2.3.2
-unstructured ~= 0.16.16
+azure-storage-blob
 azure-ai-documentintelligence ~= 1.0.0
 pymupdf ~= 1.25.2
+unstructured
+unstructured[pdf]
+pillow

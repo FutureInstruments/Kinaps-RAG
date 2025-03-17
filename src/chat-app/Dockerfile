@@ -68,11 +68,11 @@ COPY its_a_rag its_a_rag
 
 # The EXPOSE instruction informs Docker that the container listens on the specified network ports at runtime.
 # For more information, see: https://docs.docker.com/engine/reference/builder/#expose
-EXPOSE $PORT
+EXPOSE 8000
 
 # The ENTRYPOINT instruction has two forms:
 # * ENTRYPOINT ["executable", "param1", "param2"] (exec form, preferred)
 # * ENTRYPOINT command param1 param2 (shell form)
 # The ENTRYPOINT instruction allows you to configure a container that will run as an executable.
 # For more information, see: https://docs.docker.com/engine/reference/builder/#entrypoint
-CMD chainlit run app.py --port=$PORT --host 0.0.0.0
+CMD ["chainlit", "run", "app.py", "--port", "8000", "--host", "0.0.0.0" ]

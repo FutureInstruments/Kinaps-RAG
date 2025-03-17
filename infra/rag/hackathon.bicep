@@ -1,6 +1,6 @@
 param buildId string = 'local'
 
-param projectName string = 'hackathon'
+param projectName string
 // Create a short, unique suffix, that will be unique to each resource group
 param salt string = substring(uniqueString(resourceGroup().id), 0, 4)
 
@@ -169,7 +169,7 @@ param openAiModelDeployments array = [
     version: gptModelVersion
     sku: {
       name: 'GlobalStandard'
-      capacity: 10
+      capacity: 20
     }
   }
   {
@@ -177,7 +177,7 @@ param openAiModelDeployments array = [
     model: 'text-embedding-ada-002'
     sku: {
       name: 'Standard'
-      capacity: 10
+      capacity: 20
     }
   }
 ]

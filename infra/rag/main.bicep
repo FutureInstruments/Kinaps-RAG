@@ -11,9 +11,9 @@ param environmentName string
 param location string = 'switzerlandnorth'
 param mockStockAppImage string = '' 
 param mockStockAppResourceExists bool = false
-param projectName string = 'itsarag'
+param projectName string = 'itsarag-kinaps-fi'
 param resourceGroupName string = 'rg-${projectName}-${salt}-${environmentName}'
-param salt string = substring((uniqueString(subscription().id, projectName, environmentName, location)), 0, 6)
+param salt string = substring((uniqueString(subscription().id, projectName, environmentName, location)), 0, 5)
 @description('Set of tags to apply to all resources.')
 param tags object = {
   environment: 'development'
