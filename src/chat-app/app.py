@@ -11,7 +11,7 @@ from chainlit.types import AskFileResponse
 # Add the its_a_rag module to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), './its_a_rag')))
 
-from assistant import Assistant
+# from assistant import Assistant
 from rag_assistant import RagAssistant
 
 # Custom Libraries
@@ -49,7 +49,7 @@ async def set_starters():
 
 @cl.on_chat_start
 async def on_chat_start():
-    cl.user_session.set("assistant", Assistant())
+    # cl.user_session.set("assistant", Assistant())
     cl.user_session.set("ragassistant", RagAssistant())
 
 @cl.on_message

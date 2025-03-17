@@ -23,7 +23,8 @@ az storage blob upload-batch --account-name $AZURE_STORAGE_ACCOUNT \
   --destination $AZURE_BLOB_CONTAINER_NAME/fsi \
   --source $SOURCE_DIR \
   --if-none-match "*" \
-  --auth-mode login
+  --auth-mode login \
+  --overwrite
 
 # Check if the upload was successful
 if [ $? -eq 0 ]; then
