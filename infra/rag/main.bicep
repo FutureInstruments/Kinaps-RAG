@@ -70,6 +70,7 @@ output AZURE_OPENAI_CHAT_DEPLOYMENT_NAME string = hackathon.outputs.AZURE_OPENAI
 output AZURE_OPENAI_CHAT_DEPLOYMENT_VERSION string = hackathon.outputs.AZURE_OPENAI_CHAT_DEPLOYMENT_VERSION
 output AZURE_OPENAI_ENDPOINT string = hackathon.outputs.AZURE_OPENAI_ENDPOINT
 output AZURE_OPENAI_INSTANCE_NAME string = hackathon.outputs.AZURE_OPENAI_INSTANCE_NAME
+output AZURE_OPENAI_EMBEDDING string = hackathon.outputs.AZURE_OPENAI_EMBEDDING
 output AZURE_STORAGE_ACCOUNT string = hackathon.outputs.AZURE_STORAGE_ACCOUNT
 output AZURE_RESOURCE_GROUP string = resourceGroupName
 output AZURE_SEARCH_ENDPOINT string = hackathon.outputs.AZURE_SEARCH_ENDPOINT

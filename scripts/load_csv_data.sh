@@ -23,7 +23,7 @@ if [ ! -f "$CSV_FILE" ]; then
 fi
 
 # Run the SQL file to create the initial table
-docker run -v $(pwd):/data -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=$AZURE_SQL_ACCESS -it mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S $AZURE_SQL_SERVER -U $AZURE_SQL_USER -P $AZURE_SQL_ACCESS -d $AZURE_SQL_DATABASE -i /data/$SQL_FILE > /data/import.log
+docker run -v $(pwd):/data -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=$AZURE_SQL_ACCESS -it mcr.microsoft.com/mssql-tools /opt/mssql-tools/bin/sqlcmd -S $AZURE_SQL_SERVER -U $AZURE_SQL_USER -P $AZURE_SQL_ACCESS -d $AZURE_SQL_DATABASE -i /data/$SQL_FILE -o /data/import.log
 
 # Check if the SQL command was successful
 if [ $? -ne 0 ]; then

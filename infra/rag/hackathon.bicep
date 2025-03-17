@@ -162,6 +162,9 @@ param applicationIdentityName string = 'app-identity-${salt}'
 param gptModelName string = 'gpt-4o'
 param gptModelVersion string = '2024-05-13'
 param openAIAPIVersion string = '2024-06-01'
+
+param openAIEmbendding string = 'text-embedding-ada-002'
+
 param openAiModelDeployments array = [
   {
     name: gptDeploymentName
@@ -174,7 +177,7 @@ param openAiModelDeployments array = [
   }
   {
     name: 'text-embedding-ada-002'
-    model: 'text-embedding-ada-002'
+    model: openAIEmbendding
     sku: {
       name: 'Standard'
       capacity: 20
@@ -1252,6 +1255,7 @@ output AZURE_OPENAI_CHAT_DEPLOYMENT_NAME string = gptDeploymentName
 output AZURE_OPENAI_CHAT_DEPLOYMENT_VERSION string = openAIAPIVersion
 output AZURE_OPENAI_ENDPOINT string = openAIAccount.properties.endpoint
 output AZURE_OPENAI_INSTANCE_NAME string = openAIAccountName
+output AZURE_OPENAI_EMBEDDING string = openAIEmbendding
 output AZURE_SEARCH_ENDPOINT string = 'https://${azureSearchName}.search.windows.net'
 output AZURE_SEARCH_INDEX string = azureSearchIndexName
 output AZURE_SEARCH_KEY string = azureSearch.listAdminKeys().primaryKey
