@@ -386,6 +386,13 @@ async def on_chat_resume(thread):
                 Switch(id="per_thread_indexes", label="Per Thread indexes", initial=metadata_json["per_thread_indexes"]),
         ]
         ).send()
+        if metadata_json["per_thread_indexes"] == True:
+            index_prefix = user_id+'-'+chainlit_thread_id+'-'
+        else:
+            index_prefix = user_id+'-'
+    else:
+        index_prefix = user_id+'-'
+
 
     print('THREAD')
     chainlit_thread_id = thread.get("id")
@@ -394,11 +401,7 @@ async def on_chat_resume(thread):
     user_id = app_user.identifier    
     print('APP USER  ----')
     print(app_user)
-    metadata_json = json.loads(json.dumps(app_user.metadata))
-    if metadata_json["per_thread_indexes"] == True:
-        index_prefix = user_id+'-'+chainlit_thread_id+'-'
-    else:
-        index_prefix = user_id+'-'
+
     print('set RagAssistant in SESSION')
     cl.user_session.set("ragassistant", RagAssistant(index_prefix))
     print('set RagAssistant in SESSION DONE')
@@ -424,9 +427,6 @@ async def on_chat_start():
         ]
         ).send()
         cl.user_session.set("settings", settings)
-        set = cl.user_session.get("settings")
-        print('Setting SETTING')
-        print(set)
 
     print("The chat session has started!")
     await cl.Message(f"Hello {app_user.identifier}").send()
@@ -469,8 +469,11 @@ async def on_message(message: cl.Message):
     print('APP USER  ----')
     print(app_user)
     metadata_json = json.loads(json.dumps(app_user.metadata))
-    if metadata_json["per_thread_indexes"] == True:
-        index_prefix = user_id+'-'+chainlit_thread_id+'-'
+    if "per_thread_indexes" in metadata_json:
+        if metadata_json["per_thread_indexes"] == True:
+            index_prefix = user_id+'-'+chainlit_thread_id+'-'
+        else:
+            index_prefix = user_id+'-'
     else:
         index_prefix = user_id+'-'
     print('set RagAssistant in SESSION')
