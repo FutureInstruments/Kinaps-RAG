@@ -10,7 +10,7 @@
 # For more information, see: 
 # * https://hub.docker.com/_/python 
 # * https://docs.streamlit.io/knowledge-base/tutorials/deploy/docker
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.10-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -36,7 +36,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2 - Copy only necessary files to the runner stage
 
 # The FROM instruction initializes a new build stage for the application
-FROM python:3.12-slim-bookworm
+FROM python:3.10-slim-bookworm
 
 # Define the filename to copy as an argument
 ARG FILENAME
@@ -50,6 +50,20 @@ ENV FILENAME=${FILENAME}
 # Sets the working directory to /app
 WORKDIR /app
 
+RUN apt-get update
+
+RUN apt install -y curl
+
+RUN curl -sSL -O "https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb"
+RUN dpkg -i packages-microsoft-prod.deb
+RUN apt-get update
+RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
+# optional: for bcp and sqlcmd
+RUN ACCEPT_EULA=Y apt-get install -y mssql-tools
+RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+# optional: for unixODBC development headers
+RUN apt-get install -y unixodbc-dev
+
 # Copy the virtual environment from the builder stage
 COPY --from=builder /opt/venv /opt/venv
 
@@ -60,6 +74,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY *.py .
 COPY public public
 COPY chainlit.md .
+COPY schema.sql .
 COPY ./.chainlit ./.chainlit
 
 # Copy common Python dependencies from the itsarag directory 

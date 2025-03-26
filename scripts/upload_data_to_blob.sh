@@ -22,9 +22,10 @@ echo "Starting upload of files from $SOURCE_DIR to the container $AZURE_BLOB_CON
 az storage blob upload-batch --account-name $AZURE_STORAGE_ACCOUNT \
   --destination $AZURE_BLOB_CONTAINER_NAME/fsi \
   --source $SOURCE_DIR \
+  --overwrite true \
   --if-none-match "*" \
-  --auth-mode login \
-  --overwrite
+  --auth-mode login
+  
 
 # Check if the upload was successful
 if [ $? -eq 0 ]; then

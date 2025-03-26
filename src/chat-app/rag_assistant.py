@@ -15,8 +15,8 @@ from its_a_rag.ingestion import *
 key_credential = os.environ["AZURE_SEARCH_ADMIN_KEY"] if len(os.environ["AZURE_SEARCH_ADMIN_KEY"]) > 0 else None
 
 
-class RagAssistant:
-    def __init__(self):
+class RagAssistant():
+    def __init__(self, index_prefix):
         print('init embendding')
         print(os.getenv("AZURE_OPENAI_EMBEDDING"))
         print(os.getenv("AZURE_OPENAI_API_VERSION"))
@@ -78,20 +78,22 @@ class RagAssistant:
             ),
         ]
 
-
+        print('Init AzureSearch')
         vector_store = AzureSearch (
             azure_search_endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
             azure_search_key=key_credential,
-            index_name=os.getenv("AZURE_SEARCH_INDEX"),
+            index_name=index_prefix+os.getenv("AZURE_SEARCH_INDEX"),
             embedding_function=embeddings.embed_query,
             fields=fields,
             # Configure max retries for the Azure client
             additional_search_client_options={"retry_total": 4},
         )
+        print('Init Retriever')
         retriever = vector_store.as_retriever(
             search_type="similarity_score_threshold", 
             search_kwargs={"score_threshold": 0.5}
         )
+        print('Init LLM')
         llm = AzureChatOpenAI(
             azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
             api_key=os.getenv("AZURE_OPENAI_API_KEY"),

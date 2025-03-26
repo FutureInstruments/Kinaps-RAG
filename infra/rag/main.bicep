@@ -89,9 +89,17 @@ output FORM_RECOGNIZER_ENDPOINT string = hackathon.outputs.FORM_RECOGNIZER_ENDPO
 output FORM_RECOGNIZER_KEY string = hackathon.outputs.FORM_RECOGNIZER_KEY
 output LOG_LEVEL string = hackathon.outputs.LOG_LEVEL
 output MOCKSTOCK_APP_URL string = hackathon.outputs.MOCKSTOCK_APP_URL
-output OPENAI_API_BASE string = hackathon.outputs.OPENAI_API_BASE
 output OPENAI_API_KEY string = hackathon.outputs.OPENAI_API_KEY
 output OPENAI_API_TYPE string = hackathon.outputs.OPENAI_API_TYPE
 output OPENAI_API_VERSION string = hackathon.outputs.OPENAI_API_VERSION
 output STORAGE_ACCOUNT_NAME string = hackathon.outputs.STORAGE_ACCOUNT_NAME
 output STORAGE_CONTAINER_NAME string = hackathon.outputs.STORAGE_CONTAINER_NAME
+output APP_AZURE_STORAGE_ACCOUNT string = hackathon.outputs.STORAGE_ACCOUNT_NAME
+output BUCKET_NAME string = hackathon.outputs.STORAGE_CONTAINER_NAME
+
+output AZURE_POSTGRESQL_HOST string = hackathon.outputs.AZURE_POSTGRESQL_HOST
+output AZURE_POSTGRESQL_USER string = hackathon.outputs.AZURE_POSTGRESQL_USER
+output AZURE_POSTGRESQL_PASS string = hackathon.outputs.AZURE_POSTGRESQL_PASS
+output AZURE_POSTGRESQL_DBNAME string = hackathon.outputs.AZURE_POSTGRESQL_DBNAME
+
+output AZURE_POSTGRESQL_CONNEXION_STRING string = hackathon.outputs.AZURE_POSTGRESQL_CONNEXION_STRING

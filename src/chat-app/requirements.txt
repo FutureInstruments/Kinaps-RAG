@@ -8,8 +8,14 @@ azure-identity ~= 1.18.0
 langgraph ~= 0.2.32
 pymssql~=2.3.2
 azure-storage-blob
-azure-ai-documentintelligence ~= 1.0.0
+azure-ai-documentintelligence ~= 1.0.0b2
 pymupdf ~= 1.25.2
 unstructured
 unstructured[pdf]
 pillow
+SQLAlchemy 
+azure-storage-file-datalake
+aioodbc
+aiohttp
+psycopg2-binary
+asyncpg

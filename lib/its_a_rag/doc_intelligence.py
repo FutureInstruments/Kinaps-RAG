@@ -19,6 +19,7 @@ from azure.ai.documentintelligence import DocumentIntelligenceClient
 from azure.ai.documentintelligence.models import DocumentAnalysisFeature, AnalyzeDocumentRequest
 from azure.ai.documentintelligence.models import DocumentContentFormat
 from azure.core.credentials import AzureKeyCredential
+from azure.core.exceptions import HttpResponseError
 from PIL import Image
 import pymupdf
 import mimetypes
@@ -37,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 # Function to encode a local image into data URL 
 def local_image_to_data_url(image_path):
+    print('Local Image to data URL')
     # Guess the MIME type of the image based on the file extension
     mime_type, _ = guess_type(image_path)
     if mime_type is None:
@@ -60,6 +62,7 @@ def local_image_to_data_url(image_path):
 ###################################################################
 
 def crop_image_from_image(image_path, page_number, bounding_box):
+    print('CROP image from image')
     with Image.open(image_path) as img:
         if img.format == "TIFF":
             # Open the TIFF image
@@ -82,6 +85,7 @@ def crop_image_from_image(image_path, page_number, bounding_box):
 ###################################################################
 
 def crop_image_from_pdf_page(pdf_path, page_number, bounding_box):
+    print('CROP image from PDF')
     doc = pymupdf.open(pdf_path)
     page = doc.load_page(page_number)
     
@@ -129,32 +133,43 @@ def crop_image_from_file(file_path, page_number, bounding_box):
 ###################################################################
 
 def understand_image_with_gptv(image_path, caption):
+    print('understand image with GPT')
     client = AzureOpenAI(
         api_key=os.getenv('AZURE_OPENAI_API_KEY'),  
         api_version=os.getenv('AZURE_OPENAI_API_VERSION'),
         base_url=f"{os.getenv('AZURE_OPENAI_ENDPOINT')}/openai/deployments/{os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')}"
     )
     data_url = local_image_to_data_url(image_path)
-    response = client.chat.completions.create(
-                model=os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME'),
-                messages=[
-                    { "role": "system", "content": SYSTEM_CONTEXT },
-                    { "role": "user", "content": [  
-                        { 
-                            "type": "text", 
-                            "text": f"Describe this image (note: it has image caption: {caption}):" if caption else "Describe this image:"
-                        },
-                        { 
-                            "type": "image_url",
-                            "image_url": {
-                                "url": data_url
+    try:
+        response = client.chat.completions.create(
+                    model=os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME'),
+                    messages=[
+                        { "role": "system", "content": SYSTEM_CONTEXT },
+                        { "role": "user", "content": [  
+                            { 
+                                "type": "text", 
+                                "text": f"Describe this image (note: it has image caption: {caption}):" if caption else "Describe this image:"
+                            },
+                            { 
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": data_url
+                                }
                             }
-                        }
-                    ] } 
-                ],
-                max_tokens=MAX_TOKENS
-            )
-    img_description = response.choices[0].message.content
+                        ] } 
+                    ],
+                    max_tokens=MAX_TOKENS
+                )
+        img_description = response.choices[0].message.content
+    except HttpResponseError as ex:
+        if ex.status_code == 400:
+            response = json.loads(ex.response._content.decode('utf-8'))
+            if isinstance(response, dict) and "error" in response:
+                print(f"Your request triggered an {response['error']['code']} error:\n\t {response['error']['message']}")
+            else:
+                raise ex
+        else:
+            raise ex
     return img_description, data_url
 
 
@@ -329,15 +344,23 @@ class AzureAIDocumentIntelligenceParser(BaseBlobParser):
         yield Document(page_content=md_content, metadata={"images": fig_metadata})
 
     def lazy_parse(self, file_path: str) -> Iterator[Document]:
+        print('doing Lazy parse')
+        print(self.api_model)
+        print(self.mode)
         """Lazily parse the blob."""
         blob = Blob.from_path(file_path)
-        with blob.as_bytes_io() as file_obj:
+        print('BLOB')
+        print(blob)
+        with open(file_path, "rb") as f:
+        # with blob.as_bytes_io() as file_obj:
+        #    print(file_obj)
             poller = self.client.begin_analyze_document(
                 self.api_model,
-                file_obj,
+                body=f,
                 content_type="application/octet-stream",
                 output_content_format=DocumentContentFormat.MARKDOWN if self.mode == "markdown" else "text",
             )
+            print('Get result from Poller')
             result = poller.result()
 
             if self.mode in ["single", "markdown"]:
@@ -366,6 +389,11 @@ class AzureAIDocumentIntelligenceLoader(BaseLoader):
         ), "file_path must be provided"
         self.file_path = file_path
 
+        print('Init DocInt PARSER')
+        print(api_endpoint)
+        print(api_key)
+        print(api_version)
+        print(api_model)
         self.parser = AzureAIDocumentIntelligenceParser(
             api_endpoint=api_endpoint,
             api_key=api_key,
@@ -374,12 +402,15 @@ class AzureAIDocumentIntelligenceLoader(BaseLoader):
             mode="markdown",
             analysis_features=analysis_features,
         )
+        print('Init PARSER DONE')
 
     def lazy_load(
         self,
     ) -> Iterator[Document]:
         """Lazy load given path as pages."""
         if self.file_path is not None:
+            print('Parse page '+self.file_path)
             yield from self.parser.parse(self.file_path)
+            print('Parse page '+self.file_path+' DONE')
         else:
             raise ValueError(f"Only local path is supported for now.")

@@ -3,8 +3,8 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "Copying libraries to src/chat-app..."
-cp -r lib/its_a_rag src/chat-app/
+#echo "Copying libraries to src/chat-app..."
+#cp -r lib/its_a_rag src/chat-app/
 
 echo "Running load_csv_data.sh..."
 ./scripts/load_csv_data.sh

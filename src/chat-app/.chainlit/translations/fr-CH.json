@@ -1,155 +1,191 @@
 {
-    "components": {
-        "atoms": {
-            "buttons": {
-                "userButton": {
-                    "menu": {
-                        "settings": "Paramètres",
-                        "settingsKey": "S",
-                        "APIKeys": "API Keys",
-                        "logout": "Se déconnecter"
-                    }
+    "common": {
+        "actions": {
+            "cancel": "Annuler",
+            "confirm": "Confirmer",
+            "continue": "Continuer",
+            "goBack": "Revenir en arrière",
+            "reset": "Réinitialiser",
+            "submit": "Soumettre"
+        },
+        "status": {
+            "loading": "Chargement...",
+            "error": {
+                "default": "Une erreur est survenue",
+                "serverConnection": "Impossible de joindre le serveur"
+            }
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Se connecter pour accéder à l'application",
+            "form": {
+                "email": {
+                    "label": "Adresse e-mail / Login",
+                    "required": "l'e-mail ou le login est un champ obligatoire"
+                },
+                "password": {
+                    "label": "Mot de passe",
+                    "required": "le mot de passe est un champ obligatoire"
+                },
+                "actions": {
+                    "signin": "Se connecter"
+                },
+                "alternativeText": {
+                    "or": "OU"
+                }
+            },
+            "errors": {
+                "default": "Impossible de se connecter",
+                "signin": "Essayez de vous connecter avec un compte différent",
+                "oauthSignin": "Essayez de vous connecter avec un compte différent",
+                "redirectUriMismatch": "L'URI de redirection ne correspond pas à la configuration de l'application oauth",
+                "oauthCallback": "Essayez de vous connecter avec un compte différent",
+                "oauthCreateAccount": "Essayez de vous connecter avec un compte différent",
+                "emailCreateAccount": "Essayez de vous connecter avec un compte différent",
+                "callback": "Essayez de vous connecter avec un compte différent",
+                "oauthAccountNotLinked": "Pour confirmer votre identité, connectez-vous avec le même compte que celui utilisé à l'origine",
+                "emailSignin": "L'e-mail n'a pas pu être envoyé",
+                "emailVerify": "Veuillez vérifier votre e-mail, un nouvel e-mail a été envoyé",
+                "credentialsSignin": "Échec de la connexion. Vérifiez que les informations fournies sont correctes",
+                "sessionRequired": "Veuillez vous connecter pour accéder à cette page"
+            }
+        },
+        "provider": {
+            "continue": "Continuer avec {{provider}}"
+        }
+    },
+    "chat": {
+        "input": {
+            "placeholder": "Tapez votre message ici...",
+            "actions": {
+                "send": "Envoyer le message",
+                "stop": "Arrêter la tâche",
+                "attachFiles": "Joindre des fichiers"
+            }
+        },
+        "speech": {
+            "start": "Démarrer l'enregistrement",
+            "stop": "Arrêter l'enregistrement",
+            "connecting": "Connexion en cours"
+        },
+        "fileUpload": {
+            "dragDrop": "Glissez et déposez les fichiers ici",
+            "browse": "Parcourir les fichiers",
+            "sizeLimit": "Limite :",
+            "errors": {
+                "failed": "Échec du téléchargement",
+                "cancelled": "Téléchargement annulé de"
+            }
+        },
+        "messages": {
+            "status": {
+                "using": "Utilisation de",
+                "used": "Utilisé"
+            },
+            "actions": {
+                "copy": {
+                    "button": "Copier dans le presse-papiers",
+                    "success": "Copié !"
+                }
+            },
+            "feedback": {
+                "positive": "Utile",
+                "negative": "Inutile",
+                "edit": "Modifier le feedback",
+                "dialog": {
+                    "title": "Ajouter un commentaire",
+                    "submit": "Soumettre le feedback"
+                },
+                "status": {
+                    "updating": "Mise à jour en cours",
+                    "updated": "Feedback mis à jour"
                 }
             }
         },
-        "molecules": {
-            "newChatButton": {
-                "newChat": "Nouvelle conversation"
+        "history": {
+            "title": "Dernières entrées",
+            "empty": "Tellement vide...",
+            "show": "Afficher l'historique"
+        },
+        "settings": {
+            "title": "Panneau de paramètres"
+        },
+        "watermark": "Construit avec"
+    },
+    "threadHistory": {
+        "sidebar": {
+            "title": "Conversations passées",
+            "filters": {
+                "search": "Rechercher"
             },
-            "tasklist": {
-                "TaskList": {
-                    "title": "\ud83d\uddd2\ufe0f Liste de taches",
-                    "loading": "Chargement...",
-                    "error": "Une erreur c'est produite"
-                }
+            "timeframes": {
+                "today": "Aujourd'hui",
+                "yesterday": "Hier",
+                "previous7days": "7 jours précédents",
+                "previous30days": "30 jours précédents"
             },
-            "attachments": {
-                "cancelUpload": "Annuler le chargement",
-                "removeAttachment": "Supprimer la pièce jointe"
-            },
-            "newChatDialog": {
-                "createNewChat": "Create new chat?",
-                "clearChat": "This will clear the current messages and start a new chat.",
-                "cancel": "Cancel",
-                "confirm": "Confirm"
-            },
-            "settingsModal": {
-                "expandMessages": "Déployer les messages",
-                "hideChainOfThought": "Hide Chain of Thought",
-                "darkMode": "Dark Mode"
+            "empty": "Aucune conversation trouvée",
+            "actions": {
+                "close": "Fermer la barre latérale",
+                "open": "Ouvrir la barre latérale"
             }
         },
-        "organisms": {
-            "chat": {
-                "history": {
-                    "index": {
-                        "lastInputs": "Dernières requêtes",
-                        "noInputs": "Historique vide...",
-                        "loading": "Chargement..."
-                    }
-                },
-                "inputBox": {
-                    "input": {
-                        "placeholder": "Inscrivez votre requête ici..."
-                    },
-                    "speechButton": {
-                        "start": "Start recording",
-                        "stop": "Stop recording"
-                    },
-                    "SubmitButton": {
-                        "sendMessage": "Envoyez votre requête",
-                        "stopTask": "Arrêter le process en cours"
-                    },
-                    "UploadButton": {
-                        "attachFiles": "Attach files"
-                    },
-                    "waterMark": {
-                        "text": "Built with"
-                    }
-                },
-                "Messages": {
-                    "index": {
-                        "running": "En cours de génération",
-                        "executedSuccessfully": "executed successfully",
-                        "failed": "failed",
-                        "feedbackUpdated": "Feedback updated",
-                        "updating": "Updating"
-                    }
-                },
-                "dropScreen": {
-                    "dropYourFilesHere": "Déposez vos fichiers ici"
-                },
-                "index": {
-                    "failedToUpload": "Failed to upload",
-                    "cancelledUploadOf": "Cancelled upload of",
-                    "couldNotReachServer": "😀 Il y a du trafic sur le serveur de l'IA !!! En attente de sa réponse...",
-                    "continuingChat": "Continuing previous chat"
-                },
-                "settings": {
-                    "settingsPanel": "Settings panel",
-                    "reset": "Reset",
-                    "cancel": "Cancel",
-                    "confirm": "Confirm"
-                }
+        "thread": {
+            "untitled": "Conversation sans titre",
+            "menu": {
+                "rename": "Renommer",
+                "delete": "Supprimer"
             },
-            "threadHistory": {
-                "sidebar": {
-                    "filters": {
-                        "FeedbackSelect": {
-                            "feedbackAll": "Feedback: All",
-                            "feedbackPositive": "Feedback: Positive",
-                            "feedbackNegative": "Feedback: Negative"
-                        },
-                        "SearchBar": {
-                            "search": "Search"
+            "actions": {
+                "delete": {
+                    "title": "Confirmer la suppression",
+                    "description": "Cela supprimera la conversation ainsi que ses messages et éléments. Cette action est irréversible",
+                    "success": "Conversation supprimée",
+                    "inProgress": "Suppression de la conversation en cours"
+                },
+                "rename": {
+                    "title": "Renommer la conversation",
+                    "description": "Entrez un nouveau nom pour cette conversation",
+                    "form": {
+                        "name": {
+                            "label": "Nom",
+                            "placeholder": "Entrez un nouveau nom"
                         }
                     },
-                    "DeleteThreadButton": {
-                        "confirmMessage": "This will delete the thread as well as it's messages and elements.",
-                        "cancel": "Cancel",
-                        "confirm": "Confirm",
-                        "deletingChat": "Deleting chat",
-                        "chatDeleted": "Chat deleted"
-                    },
-                    "index": {
-                        "pastChats": "Conversations passées"
-                    },
-                    "ThreadList": {
-                        "empty": "Empty..."
-                    },
-                    "TriggerButton": {
-                        "closeSidebar": "Close sidebar",
-                        "openSidebar": "Open sidebar"
-                    }
-                },
-                "Thread": {
-                    "backToChat": "Go back to chat",
-                    "chatCreatedOn": "This chat was created on"
+                    "success": "Conversation renommée !",
+                    "inProgress": "Renommage de la conversation en cours"
                 }
-            },
-            "header": {
-                "chat": "Chat",
-                "readme": "Readme"
             }
         }
     },
-    "hooks": {
-        "useLLMProviders": {
-            "failedToFetchProviders": "Failed to fetch providers:"
+    "navigation": {
+        "header": {
+            "chat": "Chat",
+            "readme": "Readme"
+        },
+        "newChat": {
+            "button": "Nouveau Chat",
+            "dialog": {
+                "title": "Créer un nouveau chat",
+                "description": "Cela effacera votre historique de chat actuel. Êtes-vous sûr de vouloir continuer ?",
+                "tooltip": "Nouveau Chat"
+            }
+        },
+        "user": {
+            "menu": {
+                "settings": "Paramètres",
+                "settingsKey": "P",
+                "apiKeys": "Clés API",
+                "logout": "Se déconnecter"
+            }
         }
     },
-    "pages": {
-        "Design": {},
-        "Env": {
-            "savedSuccessfully": "Saved successfully",
-            "requiredApiKeys": "Required API Keys",
-            "requiredApiKeysInfo": "To use this app, the following API keys are required. The keys are stored on your device's local storage."
-        },
-        "Page": {
-            "notPartOfProject": "You are not part of this project."
-        },
-        "ResumeButton": {
-            "resumeChat": "Resume Chat"
+    "apiKeys": {
+        "title": "Clés API requises",
+        "description": "Pour utiliser cette application, les clés API suivantes sont requises. Les clés sont stockées dans le stockage local de votre appareil.",
+        "success": {
+            "saved": "Enregistré avec succès"
         }
     }
 }

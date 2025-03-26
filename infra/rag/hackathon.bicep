@@ -1,5 +1,8 @@
 param buildId string = 'local'
 
+@secure()
+param chainlitSecret string = newGuid() //Can only be used as the default value for a param
+
 param projectName string
 // Create a short, unique suffix, that will be unique to each resource group
 param salt string = substring(uniqueString(resourceGroup().id), 0, 4)
@@ -174,6 +177,7 @@ param openAiModelDeployments array = [
       name: 'GlobalStandard'
       capacity: 20
     }
+    raiPolicyName: policyName
   }
   {
     name: 'text-embedding-ada-002'
@@ -182,6 +186,7 @@ param openAiModelDeployments array = [
       name: 'Standard'
       capacity: 20
     }
+    raiPolicyName: policyName
   }
 ]
 
@@ -311,6 +316,9 @@ resource openAIAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: openAIAccountName
   tags: tags
   location: azureOpenAILocation
+  dependsOn: [
+    raiPolicy
+  ]
   kind: 'OpenAI'
   properties: {
     restore: false
@@ -344,6 +352,124 @@ resource openAIAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
       }
     }
   ]
+}
+
+// ADD POLICY TO OPEN AI AZURE FOR FILTERING
+
+@description('Name of the Azure AI Services account where the policy will be created')
+param accountName string = openAIAccountName
+
+@description('Name of the policy to be created')
+param policyName string = 'custom-policy'
+
+@allowed(['Asynchronous_filter', 'Blocking', 'Default', 'Deferred'])
+param mode string = 'Default'
+
+@description('Base policy to be used for the new policy')
+param basePolicyName string = 'Microsoft.DefaultV2'
+
+param contentFilters array = [
+  {
+      name: 'Violence'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Prompt'
+  }
+  {
+      name: 'Hate'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Prompt'
+  }
+  {
+      name: 'Sexual'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Prompt'
+  }
+  {
+      name: 'Selfharm'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Prompt'
+  }
+  {
+      name: 'Jailbreak'
+      blocking: false
+      enabled: false
+      source: 'Prompt'
+  }
+  {
+      name: 'Indirect Attack'
+      blocking: false
+      enabled: false
+      source: 'Prompt'
+  }
+  {
+      name: 'Profanity'
+      blocking: true
+      enabled: true
+      source: 'Prompt'
+  }
+  {
+      name: 'Violence'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+  {
+      name: 'Hate'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+  {
+      name: 'Sexual'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+  {
+      name: 'Selfharm'
+      severityThreshold: 'High'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+  {
+      name: 'Protected Material Text'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+  {
+      name: 'Protected Material Code'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+  {
+      name: 'Profanity'
+      blocking: true
+      enabled: true
+      source: 'Completion'
+  }
+]
+
+resource raiPolicy 'Microsoft.CognitiveServices/accounts/raiPolicies@2024-06-01-preview' = {
+  name: '${accountName}/${policyName}'
+  properties: {
+      mode: mode
+      basePolicyName: basePolicyName
+      contentFilters: contentFilters
+  }
 }
 
 //OpenAI diagnostic settings
@@ -731,7 +857,7 @@ module azureSearchPrivateEndpoint '../modules/privateEndpoint.bicep' = if (usePr
 }
 
 param formRecognizerName string = 'docint-${salt}'
-resource formRecognizerAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+resource formRecognizerAccount 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: formRecognizerName
   tags: tags
   location: location
@@ -843,12 +969,28 @@ var secrets = concat(
       value: 'AccountEndpoint=${cosmosDBAccount.properties.documentEndpoint};AccountKey=${cosmosDBAccount.listKeys().primaryMasterKey};'
     }
     {
+      name: 'postgresqlconnectionstring'
+      value: 'postgresql://${pgsql.properties.administratorLogin}:${sqlServerAdminAccess}@${pgsql.name}.postgres.database.azure.com:5432/${defaultDatabaseName}'
+    }
+    {
+      name: 'persistentpostgresqlconnectionstring'
+      value: 'postgresql://${pgsql.properties.administratorLogin}:${sqlServerAdminAccess}@${pgsql.name}.postgres.database.azure.com:5432/${defaultDatabaseName}'
+    }
+    {
       name: 'blobconnectionstring'
       value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
     }
     {
+      name: 'blobconnectionkey'
+      value: storage.listKeys().keys[0].value
+    }
+    {
       name: 'openaikey'
       value: openAIAccount.listKeys().key1
+    }
+    {
+      name: 'chainlitsecret'
+      value: chainlitSecret
     }
   ],
   realSecrets
@@ -860,6 +1002,10 @@ var servicesUrlConfig = [for container in items(containers): {
 }]
 
 var credentialsEnv = [
+  {
+    name: 'CHAINLIT_AUTH_SECRET'
+    secretRef: 'chainlitsecret'
+  }
   {
     name: 'FORM_RECOGNIZER_KEY'
     secretRef: 'formrecognizerkey'
@@ -893,6 +1039,22 @@ var credentialsEnv = [
     secretRef: 'azurecosmosdbconnectionstring'
   }
   {
+    name: 'AZURE_POSTGRESQL_CONNECTION_STRING'
+    secretRef: 'postgresqlconnectionstring'
+  }
+  {
+    name: 'DATABASE_URL'
+    secretRef: 'persistentpostgresqlconnectionstring'
+  }
+  {
+    name: 'AZURE_BLOB_STORAGE_CNX'
+    secretRef: 'blobconnectionstring'
+  }
+  {
+    name: 'AZURE_BLOB_STORAGE_KEY'
+    secretRef: 'blobconnectionkey'
+  }
+  {
     name: 'AZURE_COSMOSDB_ENDPOINT'
     value: cosmosDBAccount.properties.documentEndpoint
   }
@@ -911,6 +1073,10 @@ var credentialsEnv = [
   {
     name: 'AZURE_OPENAI_API_VERSION'
     value: openAIAPIVersion
+  }
+  {
+    name: 'AZURE_OPENAI_EMBEDDING'
+    value: openAIEmbendding
   }
   {
     name: 'OPENAI_API_VERSION'
@@ -939,11 +1105,6 @@ var credentialsEnv = [
   {
     name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
     value: applicationInsights.properties.ConnectionString
-  }
-
-  {
-    name: 'OPENAI_API_BASE'
-    value: openAIAccount.properties.endpoint
   }
   {
     name: 'LOG_LEVEL'
@@ -1242,6 +1403,33 @@ resource sqlserver 'Microsoft.Sql/servers@2023-08-01-preview' = {
   }
 }
 
+param pgsqlServerName string = 'pg-${sqlServerName}'
+resource pgsql 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
+  name: pgsqlServerName
+  location: location
+  sku: {
+    name: 'Standard_B1ms'
+    tier: 'Burstable'
+  }
+  properties: {
+    administratorLogin: sqlServerAdminLogin
+    administratorLoginPassword: sqlServerAdminAccess
+    version: '14'
+    storage: { storageSizeGB: 32 }
+  }  
+  resource database 'databases' = {
+    name: defaultDatabaseName
+  }
+  
+  resource firewallRule 'firewallRules' = {
+    name: 'AllowAll'
+    properties: {
+      endIpAddress: '255.255.255.255'
+      startIpAddress: '0.0.0.0'
+    }
+  }
+}
+
 
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.properties.loginServer
@@ -1271,10 +1459,15 @@ output DOCUMENT_INTELLIGENCE_ENDPOINT string = formRecognizerAccount.properties.
 output FORM_RECOGNIZER_ENDPOINT string = formRecognizerAccount.properties.endpoint
 output FORM_RECOGNIZER_KEY string = formRecognizerAccount.listKeys().key1
 output LOG_LEVEL string = 'DEBUG'
-output OPENAI_API_BASE string = openAIAccount.properties.endpoint
 output OPENAI_API_KEY string = openAIAccount.listKeys().key1
 output OPENAI_API_TYPE string = 'azure'
 output OPENAI_API_VERSION string = openAIAPIVersion
 output STORAGE_ACCOUNT_NAME string = storageAccountName
 output STORAGE_CONTAINER_NAME string = blobContainerName
 output MOCKSTOCK_APP_URL string = 'https://mockstock-app.${containerAppEnv.properties.defaultDomain}'
+
+output AZURE_POSTGRESQL_HOST string = '${pgsql.name}.postgres.database.azure.com'
+output AZURE_POSTGRESQL_USER string = pgsql.properties.administratorLogin
+output AZURE_POSTGRESQL_PASS string = sqlServerAdminAccess
+output AZURE_POSTGRESQL_DBNAME string = defaultDatabaseName
+output AZURE_POSTGRESQL_CONNEXION_STRING string = 'postgresql://${pgsql.properties.administratorLogin}:${sqlServerAdminAccess}@${pgsql.name}.postgres.database.azure.com:5432/${defaultDatabaseName}'
