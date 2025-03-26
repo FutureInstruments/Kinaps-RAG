@@ -423,11 +423,10 @@ async def on_chat_start():
                 Switch(id="per_thread_indexes", label="Per Thread indexes", initial=metadata_json["per_thread_indexes"]),
         ]
         ).send()
-
-    cl.user_session.set("settings", settings)
-    set = cl.user_session.get("settings")
-    print('Setting SETTING')
-    print(set)
+        cl.user_session.set("settings", settings)
+        set = cl.user_session.get("settings")
+        print('Setting SETTING')
+        print(set)
 
     print("The chat session has started!")
     await cl.Message(f"Hello {app_user.identifier}").send()
