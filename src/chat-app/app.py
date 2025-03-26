@@ -380,11 +380,12 @@ async def on_chat_resume(thread):
     metadata_json = json.loads(json.dumps(app_user.metadata))
     print('METADATA')
     print(metadata_json)
-    settings = await cl.ChatSettings(
-    [
-            Switch(id="per_thread_indexes", label="Per Thread indexes", initial=metadata_json["per_thread_indexes"]),
-    ]
-    ).send()
+    if "per_thread_indexes" in metadata_json:
+        settings = await cl.ChatSettings(
+        [
+                Switch(id="per_thread_indexes", label="Per Thread indexes", initial=metadata_json["per_thread_indexes"]),
+        ]
+        ).send()
 
     print('THREAD')
     chainlit_thread_id = thread.get("id")
@@ -416,11 +417,12 @@ async def on_chat_start():
     metadata_json = json.loads(json.dumps(app_user.metadata))
     print('METADATA')
     print(metadata_json)
-    settings = await cl.ChatSettings(
-    [
-            Switch(id="per_thread_indexes", label="Per Thread indexes", initial=metadata_json["per_thread_indexes"]),
-    ]
-    ).send()
+    if "per_thread_indexes" in metadata_json:
+        settings = await cl.ChatSettings(
+        [
+                Switch(id="per_thread_indexes", label="Per Thread indexes", initial=metadata_json["per_thread_indexes"]),
+        ]
+        ).send()
 
     cl.user_session.set("settings", settings)
     set = cl.user_session.get("settings")
