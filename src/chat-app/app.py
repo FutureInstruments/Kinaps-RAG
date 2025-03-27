@@ -337,6 +337,34 @@ index_prefix = 'first-'
 def get_current_chainlit_thread_id() -> str:
     return cl.context.session.thread_id
 
+async def send_animated_message(
+    base_msg: str,
+    end_msg: str,
+    frames: List[str],
+    interval: float = 0.8
+) -> None:
+    """Display animated message with minimal resource usage"""
+    msg = cl.Message(content=base_msg)
+    await msg.send()
+    
+    progress = 0
+    bar_length = 12  # Optimal length for progress bar
+    
+    try:
+        while True:
+            # Efficient progress calculation
+            current_frame = frames[progress % len(frames)]
+            progress_bar = ("▣" * (progress % bar_length)).ljust(bar_length, "▢")
+            
+            # Single update operation
+            msg.content = f"{current_frame} {base_msg}\n{progress_bar}"
+            await msg.update()
+            
+            progress += 1
+            await asyncio.sleep(interval)
+    except asyncio.CancelledError:
+        msg.content = end_msg
+        await msg.update()  # Final static message
 
 @cl.password_auth_callback
 def auth_callback(username: str, password: str)-> Optional[cl.User]:
@@ -433,6 +461,7 @@ async def on_chat_start():
     user_id = app_user.identifier
 
 
+
 @cl.set_starters
 async def set_starters():
     return [
@@ -458,7 +487,7 @@ async def set_starters():
 
 @cl.on_message
 async def on_message(message: cl.Message):
-
+    global animation_task
     global user_id 
     global index_prefix
     print('STORE ASSISTANT IN SESSION')
@@ -555,12 +584,22 @@ async def on_message(message: cl.Message):
             print('END OF LOADER init')
             print("--- %s seconds ---" % (time.time() - start_time))
             
+            print('create annimation task')
+            animation_task = asyncio.create_task(
+                send_animated_message(
+                    "Processing ...",
+                    "Processing Done",
+                    ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"],
+                    0.8
+                )
+            )
             print('LOADER load')
             start_time = time.time()
             # docs = loader.load()
             async_function = make_async(load_doc)
-
             docs = await async_function(loader)
+            await animation_task
+
             print('END OF LOADER load')
             print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -579,6 +618,8 @@ async def on_message(message: cl.Message):
             print("--- %s seconds ---" % (time.time() - start_time))
 
             print('store DONE')
+        print('STOP annimation')
+        animation_task.cancel()
 
         print('cast RAG assistant')
         assistant = cast(RagAssistant, cl.user_session.get("ragassistant"))  # type: RagAssistant
