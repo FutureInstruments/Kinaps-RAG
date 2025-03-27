@@ -593,33 +593,13 @@ async def on_message(message: cl.Message):
                     0.8
                 )
             )
-            print('LOADER load')
-            start_time = time.time()
+
             # docs = loader.load()
             async_function = make_async(load_doc)
-            docs = await async_function(loader)
+            docs = await async_function(vector_store_multimodal, loader, pdf_file_name)
             await animation_task
 
-            print('END OF LOADER load')
-            print("--- %s seconds ---" % (time.time() - start_time))
-
-            # Index : Split
-            print('go for TEXT SPLITTER')
-            start_time = time.time()        
-            docs = advanced_text_splitter(docs,pdf_file_name)
-            print('END OF TEXT SPLITTER')
-            print("--- %s seconds ---" % (time.time() - start_time))   
-
-            # Index : Store
-            # print(docs)
-            print('STORE DOC')
-            start_time = time.time()
-            vector_store_multimodal.add_documents(documents=docs)
-            print("--- %s seconds ---" % (time.time() - start_time))
-
             print('store DONE')
-        print('STOP annimation')
-        animation_task.cancel()
 
         print('cast RAG assistant')
         assistant = cast(RagAssistant, cl.user_session.get("ragassistant"))  # type: RagAssistant
@@ -635,8 +615,28 @@ async def on_message(message: cl.Message):
         await msg.send()
 
 
-def load_doc(loader):
+def load_doc(vector_store_multimodal,loader,pdf_file_name):
 
+    print('LOADER load')
+    start_time = time.time()
     docs = loader.load()
+    print('END OF LOADER load')
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+    # Index : Split
+    print('go for TEXT SPLITTER')
+    start_time = time.time()        
+    docs = advanced_text_splitter(docs,pdf_file_name)
+    print('END OF TEXT SPLITTER')
+    print("--- %s seconds ---" % (time.time() - start_time))   
+
+    # Index : Store
+    # print(docs)
+    print('STORE DOC')
+    start_time = time.time()
+    vector_store_multimodal.add_documents(documents=docs)
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print('ENF ANIMATION')
+    animation_task.cancel()
 
     return docs
