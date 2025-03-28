@@ -777,6 +777,9 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
     resource container 'containers' = {
       name: blobContainerName
+      properties: {
+        publicAccess: 'Container'
+      }
     }
   }
   resource fileService 'fileServices' existing = {
@@ -1055,6 +1058,10 @@ var credentialsEnv = [
     secretRef: 'blobconnectionkey'
   }
   {
+    name: 'APP_AZURE_STORAGE_ACCESS_KEY'
+    secretRef: 'blobconnectionkey'
+  }
+  {
     name: 'AZURE_COSMOSDB_ENDPOINT'
     value: cosmosDBAccount.properties.documentEndpoint
   }
@@ -1111,7 +1118,9 @@ var credentialsEnv = [
     value: 'DEBUG'
   }
   { name: 'STORAGE_ACCOUNT_NAME', value: storageAccountName }
+  { name: 'APP_AZURE_STORAGE_ACCOUNT', value: storageAccountName }
   { name: 'BLOB_CONTAINER_NAME', value: blobContainerName }
+  { name: 'BUCKET_NAME', value: blobContainerName }
   {
     name: 'STORAGE_CONTAINER_NAME'
     value: blobContainerName

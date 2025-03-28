@@ -95,6 +95,7 @@ output OPENAI_API_VERSION string = hackathon.outputs.OPENAI_API_VERSION
 output STORAGE_ACCOUNT_NAME string = hackathon.outputs.STORAGE_ACCOUNT_NAME
 output STORAGE_CONTAINER_NAME string = hackathon.outputs.STORAGE_CONTAINER_NAME
 output APP_AZURE_STORAGE_ACCOUNT string = hackathon.outputs.STORAGE_ACCOUNT_NAME
+
 output BUCKET_NAME string = hackathon.outputs.STORAGE_CONTAINER_NAME
 
 output AZURE_POSTGRESQL_HOST string = hackathon.outputs.AZURE_POSTGRESQL_HOST
