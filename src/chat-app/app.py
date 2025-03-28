@@ -385,7 +385,27 @@ def auth_callback(username: str, password: str)-> Optional[cl.User]:
                     return cl.User(
                     identifier="remy", metadata={"role": "user", "provider": "credentials", "per_thread_indexes": False})
             else:
-                return None
+                if (username, password) == ("uspi", "uspiBRAIN2025"):
+                        print(f"Authenticated user {username}")
+                        return cl.User(
+                        identifier="uspi", metadata={"role": "user", "provider": "credentials"})
+                else:
+                    if (username, password) == ("gastrovd", "gastrovdBRAIN2025"):
+                            print(f"Authenticated user {username}")
+                            return cl.User(
+                            identifier="gastrovd", metadata={"role": "user", "provider": "credentials"})
+                    else:
+                        if (username, password) == ("cifer", "ciferBRAIN2025"):
+                                print(f"Authenticated user {username}")
+                                return cl.User(
+                                identifier="cifer", metadata={"role": "user", "provider": "credentials"})
+                        else:
+                            if (username, password) == ("dho", "dhoBRAIN2025"):
+                                    print(f"Authenticated user {username}")
+                                    return cl.User(
+                                    identifier="dho", metadata={"role": "user", "provider": "credentials"})
+                            else:
+                                return None
         
     
 
