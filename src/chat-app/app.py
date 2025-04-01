@@ -408,7 +408,7 @@ def auth_callback(username: str, password: str)-> Optional[cl.User]:
                                 if (username, password) == ("hevs", "hevsBRAIN2025"):
                                         print(f"Authenticated user {username}")
                                         return cl.User(
-                                        identifier="dho", metadata={"role": "user", "provider": "credentials"})
+                                        identifier="hevs", metadata={"role": "user", "provider": "credentials"})
                                 else:
                                     return None
             
