@@ -430,6 +430,7 @@ async def on_chat_resume(thread):
     app_user = cl.user_session.get("user")
     print('APP USER  ----')
     print(app_user)
+    user_id = app_user.identifier    
     metadata_json = json.loads(json.dumps(app_user.metadata))
     print('METADATA')
     print(metadata_json)
@@ -520,6 +521,8 @@ async def on_message(message: cl.Message):
     print('Thread ID')
     print(chainlit_thread_id)
     app_user = cl.user_session.get("user")
+    user_id = app_user.identifier    
+
     print('APP USER  ----')
     print(app_user)
     metadata_json = json.loads(json.dumps(app_user.metadata))
@@ -535,7 +538,7 @@ async def on_message(message: cl.Message):
     print('set RagAssistant in SESSION DONE')
 
     if not message.elements:
-        await cl.Message(content="No file attached").send()
+        # await cl.Message(content="No file attached").send()
 
         # print('cast assistant')
         # assistant = cast(Assistant, cl.user_session.get("assistant"))  # type: Assistant
