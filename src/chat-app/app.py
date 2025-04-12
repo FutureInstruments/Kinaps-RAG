@@ -1,4 +1,6 @@
+import base64
 import sys, os
+import uuid
 from langchain.schema.runnable.config import RunnableConfig
 from typing import cast, Optional
 import asyncio
@@ -7,6 +9,7 @@ from urllib.parse import urlparse
 
 
 from dotenv import load_dotenv
+from tqdm import tqdm
 load_dotenv()
 
 import chainlit as cl
@@ -303,6 +306,8 @@ print(os.getenv("AZURE_POSTGRESQL_CONNECTION_STRING"))
 create_data_layer()
 print('CREATE DATA LAYER DONE')
 
+max_doc_upload = int(os.getenv("AZURE_MAX_DOC_UPLOAD"))
+
 # storage_client = AzureBlobStorageClient(
 #     container_name=os.getenv("AZURE_BLOB_CONTAINER_NAME"),
 #     storage_account=os.getenv("AZURE_STORAGE_ACCOUNT"),
@@ -328,6 +333,9 @@ from its_a_rag.ingestion import *
 from azure.ai.documentintelligence.models import DocumentAnalysisFeature, AnalyzeDocumentRequest
 from azure.ai.documentintelligence.models import DocumentContentFormat
 import time
+
+from azure.search.documents import SearchIndexingBufferedSender  
+from azure.core.exceptions import HttpResponseError
 
 key_credential = os.environ["AZURE_SEARCH_ADMIN_KEY"] if len(os.environ["AZURE_SEARCH_ADMIN_KEY"]) > 0 else None
 
@@ -624,7 +632,7 @@ async def on_message(message: cl.Message):
 
             # docs = loader.load()
             async_function = make_async(load_doc)
-            docs = await async_function(vector_store_multimodal, loader, pdf_file_name)
+            docs = await async_function(vector_store_multimodal, aoai_embeddings, loader, pdf_file_name)
             await animation_task
 
             print('store DONE')
@@ -642,8 +650,33 @@ async def on_message(message: cl.Message):
 
         await msg.send()
 
+def upload_documents(vector_store: AzureSearch, embedder: AzureOpenAIEmbeddings,docs: list[Document]):
+    fields = [x.name for x in vector_store.fields]
+    print('fields')
+    print(fields)
+    for i in range(0, len(docs), max_doc_upload):
+        print('embedding doc')
+        embeddings_batch = embedder.embed_documents([x.page_content for x in docs[i:i+max_doc_upload]])
+        docs_batch = []
+        for j, doc in enumerate(docs[i:i+max_doc_upload]):
+            key = str(uuid.uuid4())
+            doc_id = base64.urlsafe_b64encode(bytes(key, "utf-8")).decode("ascii")
+            doc_dict = {
+                "id": doc_id,
+                "content": doc.page_content,
+                "content_vector": embeddings_batch[j],
+                "metadata": json.dumps(doc.metadata)
+            }
+            for k, v in doc.metadata.items():
+                if k in fields:
+                    doc_dict[k] = v
+            docs_batch.append(doc_dict)
+        print('upload doc iteration '+str(i))
+        print(len(docs_batch))
+        print(sys.getsizeof(docs_batch))
+        vector_store.client.upload_documents(docs_batch)
 
-def load_doc(vector_store_multimodal,loader,pdf_file_name):
+def load_doc(vector_store_multimodal,embedder, loader,pdf_file_name):
 
     print('LOADER load')
     start_time = time.time()
@@ -660,9 +693,13 @@ def load_doc(vector_store_multimodal,loader,pdf_file_name):
 
     # Index : Store
     # print(docs)
+    print('DOCS before upload')
+    print(len(docs))
+    print(sys.getsizeof(docs))
     print('STORE DOC')
     start_time = time.time()
-    vector_store_multimodal.add_documents(documents=docs)
+    # vector_store_multimodal.add_documents(documents=docs)
+    upload_documents(vector_store_multimodal, embedder, docs)
     print("--- %s seconds ---" % (time.time() - start_time))
     print('ENF ANIMATION')
     animation_task.cancel()

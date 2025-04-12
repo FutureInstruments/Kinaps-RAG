@@ -163,7 +163,7 @@ var resourceSubnetName = 'resource-subnet'
 
 param applicationIdentityName string = 'app-identity-${salt}'
 param gptModelName string = 'gpt-4o'
-param gptModelVersion string = '2024-05-13'
+param gptModelVersion string = '2024-11-20'
 param openAIAPIVersion string = '2024-06-01'
 
 param openAIEmbendding string = 'text-embedding-ada-002'
@@ -175,7 +175,7 @@ param openAiModelDeployments array = [
     version: gptModelVersion
     sku: {
       name: 'GlobalStandard'
-      capacity: 20
+      capacity: 800
     }
     raiPolicyName: policyName
   }
@@ -184,7 +184,7 @@ param openAiModelDeployments array = [
     model: openAIEmbendding
     sku: {
       name: 'Standard'
-      capacity: 20
+      capacity: 250
     }
     raiPolicyName: policyName
   }

@@ -48,7 +48,10 @@ def create_multimodal_vector_store(index_name: str, azure_openai_api_key: str, a
     api_key= azure_openai_api_key,
     azure_deployment=azure_openai_embedding_deployment,
     openai_api_version=azure_openai_api_version,
-    azure_endpoint = azure_openai_endpoint
+    azure_endpoint = azure_openai_endpoint,
+    chunk_size=16,
+    max_retries=3,
+    retry_max_seconds=62
     )
     
     # Create Additional Fields for the Azure Search Index    
