@@ -674,6 +674,7 @@ def upload_documents(vector_store: AzureSearch, embedder: AzureOpenAIEmbeddings,
         print('upload doc iteration '+str(i))
         print(len(docs_batch))
         print(sys.getsizeof(docs_batch))
+        print(sys.getsizeof(json.dumps(docs_batch)))
         vector_store.client.upload_documents(docs_batch)
 
 def load_doc(vector_store_multimodal,embedder, loader,pdf_file_name):
@@ -696,12 +697,14 @@ def load_doc(vector_store_multimodal,embedder, loader,pdf_file_name):
     print('DOCS before upload')
     print(len(docs))
     print(sys.getsizeof(docs))
+    docs_dict = [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in docs]
+    print(sys.getsizeof(json.dumps(docs_dict)))
     print('STORE DOC')
     start_time = time.time()
     # vector_store_multimodal.add_documents(documents=docs)
     upload_documents(vector_store_multimodal, embedder, docs)
     print("--- %s seconds ---" % (time.time() - start_time))
-    print('ENF ANIMATION')
+    print('END ANIMATION')
     animation_task.cancel()
 
     return docs

@@ -12,6 +12,8 @@ param chatAppImage string = ''
 param mockStockAppImage string = ''
 param blobIndexerImage string = ''
 
+param azure_max_doc_upload string = '100'
+
 param azureSearchIndexName string = 'blob-search-index-${salt}'
 
 @description('Set of tags to apply to all resources.')
@@ -1116,6 +1118,10 @@ var credentialsEnv = [
   {
     name: 'LOG_LEVEL'
     value: 'DEBUG'
+  }
+  {
+    name: 'AZURE_MAX_DOC_UPLOAD'
+    value: azure_max_doc_upload
   }
   { name: 'STORAGE_ACCOUNT_NAME', value: storageAccountName }
   { name: 'APP_AZURE_STORAGE_ACCOUNT', value: storageAccountName }
