@@ -11,12 +11,12 @@ services:
             path: Dockerfile
         # Uncomment if you want to build the image in Azure Container Registry
         # remoteBuild: true
-    mockstock-app:
-        project: src/mockstock-app
-        host: containerapp
-        language: python
-        docker:
-            path: Dockerfile
+    # mockstock-app:
+    #     project: src/mockstock-app
+    #     host: containerapp
+    #     language: python
+    #     docker:
+    #         path: Dockerfile
         # Uncomment if you want to build the image in Azure Container Registry
         # remoteBuild: true
 hooks:

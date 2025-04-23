@@ -9,7 +9,7 @@ param salt string = substring(uniqueString(resourceGroup().id), 0, 4)
 
 param environmentName string
 param chatAppImage string = ''
-param mockStockAppImage string = ''
+// param mockStockAppImage string = ''
 param blobIndexerImage string = ''
 
 param azure_max_doc_upload string = '100'
@@ -101,9 +101,6 @@ param containers object = {
   'chat-app': {
     imageWithTag: skipContainerApps ? defaultImage : chatAppImage
   }
-  'mockstock-app': {
-    imageWithTag: skipContainerApps ? defaultImage : mockStockAppImage
-  } 
 }
 param jobContainers object = {
   'blob-indexer': {
@@ -177,7 +174,7 @@ param openAiModelDeployments array = [
     version: gptModelVersion
     sku: {
       name: 'GlobalStandard'
-      capacity: 800
+      capacity: 200
     }
     raiPolicyName: policyName
   }
@@ -186,7 +183,7 @@ param openAiModelDeployments array = [
     model: openAIEmbendding
     sku: {
       name: 'Standard'
-      capacity: 250
+      capacity: 50
     }
     raiPolicyName: policyName
   }
@@ -318,9 +315,7 @@ resource openAIAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: openAIAccountName
   tags: tags
   location: azureOpenAILocation
-  dependsOn: [
-    raiPolicy
-  ]
+
   kind: 'OpenAI'
   properties: {
     restore: false
@@ -335,26 +330,31 @@ resource openAIAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   sku: {
     name: 'S0'
   }
-  @batchSize(1)
-  resource deployment 'deployments' = [
-    for deployment in openAiModelDeployments: {
-      name: deployment.name
-      sku: deployment.?sku ?? {
-            name: 'Standard'
-            capacity: 20
-      }
-      properties: {
-        model: {
-          format: 'OpenAI'
-          name: deployment.model
-          version: deployment.?version ?? null
-        }
-        raiPolicyName: deployment.?raiPolicyName ?? null
-        versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
-      }
-    }
-  ]
 }
+
+@batchSize(1)
+resource openAIAccountdeploy 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = [ for deploymentitem in openAiModelDeployments: {
+  parent: openAIAccount
+  tags: tags
+  dependsOn: [
+    raiPolicy
+  ]
+  name: deploymentitem.name
+  sku: deploymentitem.?sku ?? {
+        name: 'Standard'
+        capacity: 100
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: deploymentitem.model
+      version: deploymentitem.?version ?? null
+    }
+    raiPolicyName: deploymentitem.?raiPolicyName ?? null
+    versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
+  }
+}
+]
 
 // ADD POLICY TO OPEN AI AZURE FOR FILTERING
 
@@ -466,6 +466,9 @@ param contentFilters array = [
 ]
 
 resource raiPolicy 'Microsoft.CognitiveServices/accounts/raiPolicies@2024-06-01-preview' = {
+  dependsOn: [
+    openAIAccount
+  ]
   name: '${accountName}/${policyName}'
   properties: {
       mode: mode
@@ -908,7 +911,7 @@ param workloadProfiles array = usePrivateLinks
   : []
 
 param containerAppEnvName string = 'env-${salt}'
-resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-10-02-preview' = {
   name: containerAppEnvName
   tags: tags
   location: location
@@ -925,6 +928,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
       }
     }
     workloadProfiles: workloadProfiles
+    
   }
 }
 
@@ -1158,58 +1162,87 @@ var volumes = [
     storageType: 'AzureFile'
   }
 ]
-resource jobContainer 'Microsoft.App/jobs@2023-05-01' = [for container in items(jobContainers):  {
-  name: container.key
-  location: location
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${applicationIdentity.id}': {}
-    }
-  }
-  tags: union(tags, {
-    'azd-service-name': container.key
-  })
-  properties: {
-    environmentId: containerAppEnv.id
-    workloadProfileName: usePrivateLinks ? workloadProfiles[0].name : null
-    configuration: {
-      registries: [
-        {
-          identity: applicationIdentity.id
-          server: containerRegistry.properties.loginServer
-        }
-      ]
-      secrets: secrets
-      triggerType: 'Schedule'
-      replicaTimeout: 1800
-      replicaRetryLimit: 0
-      scheduleTriggerConfig: {
-        cronExpression: '*/15 * * * *'
-        parallelism: 1
-        replicaCompletionCount: 1
-      }
-    }
-    template: {
-      containers: [
-        {
-          name: container.key
-          image: empty(container.value.imageWithTag) ? defaultImage : container.value.imageWithTag
-          // Some of the openai env variables confuse the indexer (thanks to the openai sdk), don't reuse them
-          env: union(servicesUrlConfig, credentialsEnv) 
-          resources: {
-            cpu: json('1')
-            memory: '2Gi'
-          }
-        }
-      ]
-    }
-  }
-}]
+// resource jobContainer 'Microsoft.App/jobs@2023-05-01' = [for container in items(jobContainers):  {
+//   name: container.key
+//   location: location
+//   identity: {
+//     type: 'UserAssigned'
+//     userAssignedIdentities: {
+//       '${applicationIdentity.id}': {}
+//     }
+//   }
+//   tags: union(tags, {
+//     'azd-service-name': container.key
+//   })
+//   properties: {
+//     environmentId: containerAppEnv.id
+//     workloadProfileName: usePrivateLinks ? workloadProfiles[0].name : null
+//     configuration: {
+//       registries: [
+//         {
+//           identity: applicationIdentity.id
+//           server: containerRegistry.properties.loginServer
+//         }
+//       ]
+//       secrets: secrets
+//       triggerType: 'Schedule'
+//       replicaTimeout: 1800
+//       replicaRetryLimit: 0
+//       scheduleTriggerConfig: {
+//         cronExpression: '*/15 * * * *'
+//         parallelism: 1
+//         replicaCompletionCount: 1
+//       }
+//     }
+//     template: {
+//       containers: [
+//         {
+//           name: container.key
+//           image: empty(container.value.imageWithTag) ? defaultImage : container.value.imageWithTag
+//           // Some of the openai env variables confuse the indexer (thanks to the openai sdk), don't reuse them
+//           env: union(servicesUrlConfig, credentialsEnv) 
+//           resources: {
+//             cpu: json('1')
+//             memory: '2Gi'
+//           }
+//         }
+//       ]
+//     }
+//   }
+// }]
+
+param dnsRecordZone string 
+param kinapsDomainRG string
 
 
-resource containerApp 'Microsoft.App/containerApps@2023-05-01' = [
+module dnsrecord '../modules/dns-record.bicep' = [for container in items(containers): if (contains(container.key, 'chat-app')) {
+  name: 'dns-record-${container.key}'
+  scope: resourceGroup(kinapsDomainRG)
+  params: {
+    dnsRecordZone: dnsRecordZone
+    dnsRecordName: '${environmentName}-${container.key}'
+    dnsCNAME: '${container.key}.${containerAppEnv.properties.defaultDomain}'
+    dnsTXT: [containerAppEnv.properties.customDomainConfiguration.customDomainVerificationId]
+  }
+}
+]
+
+
+
+// resource myCert 'Microsoft.App/managedEnvironments/managedCertificates@2022-11-01-preview' = {
+//   name: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
+//   location: location
+//   parent: containerAppEnv
+//   dependsOn: dnsrecord
+//   properties: {
+//     domainControlValidation: 'CNAME'
+//     subjectName: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
+//   }
+// }
+
+resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = [
   for container in items(containers): {
+    dependsOn: [dnsrecord]
     name: container.key
     tags: union(tags, {
       'azd-service-name': container.key
@@ -1238,6 +1271,12 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = [
             {
               latestRevision: true
               weight: 100
+            }
+          ]
+          customDomains:[
+            {
+              bindingType: 'Auto'
+              name: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
             }
           ]
         }
@@ -1274,6 +1313,21 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = [
     }
   }
 ]
+
+param managedCertName string = 'managed-cert-single-bicep'
+
+resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = {
+  parent: containerAppEnv
+  name: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
+  location: location
+  properties: {
+    subjectName: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
+    domainControlValidation: 'HTTP'
+  }
+  dependsOn: [
+  containerApp
+  ]
+}
 
 param virtualMachineName string = 'vm-${salt}'
 resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = if (usePrivateLinks && deployJumphost) {
@@ -1444,7 +1498,6 @@ resource pgsql 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
     }
   }
 }
-
 
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.properties.loginServer

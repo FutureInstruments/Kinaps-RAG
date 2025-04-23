@@ -35,13 +35,16 @@ resource rg 'Microsoft.Resources/resourceGroups@2020-06-01' = {
   tags: tags
 }
 
+param kinapsDomainRG string = 'rgkinapsdomaindev'
+param dnsRecordZone string = 'azure-test.kinaps.ch'
+
 module hackathon 'hackathon.bicep' = {
   scope: rg
   name: 'hackathon'
   params: {
     acrName: acrName
     chatAppImage: chatAppImage
-    mockStockAppImage: mockStockAppImage
+//    mockStockAppImage: mockStockAppImage
     blobIndexerImage: blobIndexerImage
     salt: salt
     tags: tags
@@ -52,6 +55,8 @@ module hackathon 'hackathon.bicep' = {
     environmentName: environmentName
     usePrivateLinks: usePrivateLinks
     azurePrincipalId: azurePrincipalId
+    dnsRecordZone: dnsRecordZone
+    kinapsDomainRG: kinapsDomainRG
   }
 }
 
