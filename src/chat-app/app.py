@@ -28,6 +28,7 @@ from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
 from chainlit.data.storage_clients.azure_blob import AzureBlobStorageClient
 from chainlit.input_widget import Select, Switch, Slider
 from chainlit import make_async
+from chainlit.types import ThreadDict
 
 
 from pathlib import Path
@@ -418,10 +419,32 @@ def auth_callback(username: str, password: str)-> Optional[cl.User]:
                                         return cl.User(
                                         identifier="hevs", metadata={"role": "user", "provider": "credentials"})
                                 else:
-                                    return None
-            
-    
-
+                                    if (username, password) == ("dta.hevs", "vKam4yqEj+etP@2D"):
+                                            print(f"Authenticated user {username}")
+                                            return cl.User(
+                                            identifier="dta.hevs", metadata={"role": "user", "provider": "credentials"})
+                                    else:
+                                        if (username, password) == ("marian.hevs", "J@=7g!3w%CV&ncZe"):
+                                                print(f"Authenticated user {username}")
+                                                return cl.User(
+                                                identifier="marian.hevs", metadata={"role": "user", "provider": "credentials"})
+                                        else:
+                                            if (username, password) == ("loic.hevs", "yhBuj&7W46bfQDF3"):
+                                                    print(f"Authenticated user {username}")
+                                                    return cl.User(
+                                                    identifier="loic.hevs", metadata={"role": "user", "provider": "credentials"})
+                                            else:
+                                                if (username, password) == ("filipe.hevs", "hDVF@2u?gf&8=+QS"):
+                                                        print(f"Authenticated user {username}")
+                                                        return cl.User(
+                                                        identifier="filipe.hevs", metadata={"role": "user", "provider": "credentials"})
+                                                else:
+                                                    if (username, password) == ("antoine.hevs", "C+&2=rN?jB7SneVZ"):
+                                                            print(f"Authenticated user {username}")
+                                                            return cl.User(
+                                                            identifier="antoine.hevs", metadata={"role": "user", "provider": "credentials"})
+                                                    else:
+                                                        return None
 
 @cl.on_settings_update
 async def setup_agent(settings):
@@ -429,10 +452,14 @@ async def setup_agent(settings):
     update_user_setting()
 
 @cl.on_chat_resume
-async def on_chat_resume(thread):
+async def on_chat_resume(thread: ThreadDict):
     global index_prefix
     global user_id
 
+    print('GETTING THREAD MESSAGE')
+    print('----')
+    print(thread)
+    print('-----------------')
     print('Define SETTING')
     
     app_user = cl.user_session.get("user")
@@ -491,6 +518,22 @@ async def on_chat_start():
         cl.user_session.set("settings", settings)
 
     print("The chat session has started!")
+
+    # image = cl.Image(path="./cat.jpg", name="cat image", display="inline")
+
+    # await cl.Message(
+    #     # Notice that the name of the image is NOT referenced in the message content
+    #     content="Hello! this is a cat",
+    #     elements=[image],
+    # ).send()
+
+    #     # Sending a pdf with the local file path
+    # pdfelement = [
+    #   cl.Pdf(name="pdf1", display="inline", path="./pdfname.pdf", page=1)
+    # ]
+
+    # await cl.Message(content="Look at this local pdf!", elements=pdfelement).send()
+
     await cl.Message(f"Hello {app_user.identifier}").send()
     user_id = app_user.identifier
 

@@ -48,7 +48,7 @@ module hackathon 'hackathon.bicep' = {
     blobIndexerImage: blobIndexerImage
     salt: salt
     tags: tags
-    skipContainerApps: skipContainerApps
+//    skipContainerApps: skipContainerApps
     azureOpenAILocation: azureOpanAILocation
     location: location
     projectName: projectName

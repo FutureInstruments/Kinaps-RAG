@@ -94,19 +94,19 @@ param azureSearchPartitionCount int = 1
 param azureSearchHostingMode string = 'default'
 
 // Container App
-param skipContainerApps bool = false
+// param skipContainerApps bool = false
 param defaultImage string = 'docker.io/nginx:latest'
 
 param containers object = {
   'chat-app': {
-    imageWithTag: skipContainerApps ? defaultImage : chatAppImage
+    imageWithTag: chatAppImage
   }
 }
-param jobContainers object = {
-  'blob-indexer': {
-    imageWithTag: skipContainerApps ? defaultImage : blobIndexerImage
-  }
-}
+// param jobContainers object = {
+//   'blob-indexer': {
+//     imageWithTag: skipContainerApps ? defaultImage : blobIndexerImage
+//   }
+// }
 
 param acrName string = 'acr${salt}'
 

@@ -16,6 +16,7 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PNPM_HOME=/pnpm
 
 RUN apt-get update && apt-get install -y \
   build-essential \
@@ -24,10 +25,22 @@ RUN apt-get update && apt-get install -y \
   git \
   sudo \
   gpg \
+  wget \
   && rm -rf /var/lib/apt/lists/*
 
 RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:/pnpm/:$PATH"
+
+# RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
+# RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.shrc" SHELL="$(which sh)" sh -
+# RUN which pnpm
+
+# RUN pnpm --version
+
+# RUN wget -qO- https://deb.nodesource.com/setup_22.x | ENV="$HOME/.shrc" SHELL="$(which sh)" sh -
+
+#   RUN apt-get install -y nodejs
+# RUN node -v 
 
 COPY requirements.txt .
 
@@ -52,17 +65,17 @@ WORKDIR /app
 
 RUN apt-get update
 
-RUN apt install -y curl
+# RUN apt install -y curl
 
-RUN curl -sSL -O "https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb"
-RUN dpkg -i packages-microsoft-prod.deb
-RUN apt-get update
-RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
-# optional: for bcp and sqlcmd
-RUN ACCEPT_EULA=Y apt-get install -y mssql-tools
-RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
-# optional: for unixODBC development headers
-RUN apt-get install -y unixodbc-dev
+# RUN curl -sSL -O "https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb"
+# RUN dpkg -i packages-microsoft-prod.deb
+# RUN apt-get update
+# RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
+# # optional: for bcp and sqlcmd
+# RUN ACCEPT_EULA=Y apt-get install -y mssql-tools
+# RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+# # optional: for unixODBC development headers
+# RUN apt-get install -y unixodbc-dev
 
 # Copy the virtual environment from the builder stage
 COPY --from=builder /opt/venv /opt/venv
@@ -80,6 +93,13 @@ COPY ./.chainlit ./.chainlit
 # Copy common Python dependencies from the itsarag directory 
 # Requires `cp -r ../../lib/its_a_rag ./` before running `docker build .`	
 COPY its_a_rag its_a_rag
+
+#test file
+COPY cat.jpg .
+COPY pdfname.pdf .
+
+COPY element.py /opt/venv/lib/python3.10/site-packages/chainlit/
+COPY emitter.py /opt/venv/lib/python3.10/site-packages/chainlit/
 
 # The EXPOSE instruction informs Docker that the container listens on the specified network ports at runtime.
 # For more information, see: https://docs.docker.com/engine/reference/builder/#expose
