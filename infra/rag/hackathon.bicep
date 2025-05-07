@@ -10,7 +10,7 @@ param salt string = substring(uniqueString(resourceGroup().id), 0, 4)
 param environmentName string
 param chatAppImage string = ''
 // param mockStockAppImage string = ''
-param blobIndexerImage string = ''
+// param blobIndexerImage string = ''
 
 param azure_max_doc_upload string = '100'
 
@@ -55,7 +55,8 @@ param defaultVmSize string = 'Standard_DS2_v2'
 
 // Open AI parameters
 param azureOpenAILocation string
-param gptDeploymentName string = 'gpt-4o'
+param gptDeploymentName string = 'gpt-35-turbo'
+param gpt4DeploymentName string = 'gpt-4o'
 
 // Azure AI Search parameters
 @description('Optional, defaults to standard. The pricing tier of the search service you want to create (for example, basic or standard).')
@@ -161,9 +162,11 @@ var privateEndpointSubnetName = 'pe-subnet'
 var resourceSubnetName = 'resource-subnet'
 
 param applicationIdentityName string = 'app-identity-${salt}'
-param gptModelName string = 'gpt-4o'
-param gptModelVersion string = '2024-11-20'
-param openAIAPIVersion string = '2024-06-01'
+param gpt4ModelName string = 'gpt-4o'
+param gptModelName string = 'gpt-35-turbo'
+param gptModelVersion string = '0125'
+param gpt4ModelVersion string = '2024-11-20'
+param openAIAPIVersion string = '2024-12-01-preview'
 
 param openAIEmbendding string = 'text-embedding-ada-002'
 
@@ -173,8 +176,18 @@ param openAiModelDeployments array = [
     model: gptModelName
     version: gptModelVersion
     sku: {
+      name: 'Standard'
+      capacity: 100
+    }
+    raiPolicyName: policyName
+  }
+  {
+    name: gpt4DeploymentName
+    model: gpt4ModelName
+    version: gpt4ModelVersion
+    sku: {
       name: 'GlobalStandard'
-      capacity: 200
+      capacity: 1000
     }
     raiPolicyName: policyName
   }
@@ -183,7 +196,7 @@ param openAiModelDeployments array = [
     model: openAIEmbendding
     sku: {
       name: 'Standard'
-      capacity: 50
+      capacity: 115
     }
     raiPolicyName: policyName
   }
@@ -207,18 +220,19 @@ var storageQueueDataContributorRole = resourceId(
 var cognitiveContributorRole = resourceId('Microsoft.Authorization/roleDefinitions', '25fbc0a9-bd7c-42a3-aa1a-3b75d497ee68')
 var openAiAllAccessRole = resourceId('Microsoft.Authorization/roleDefinitions', 'a001fd3d-188f-4b5d-821b-7da978bf7442')
 var openAiUserAccessRole = resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
-var cosmosDbDataContributorRoleName = '00000000-0000-0000-0000-000000000002'
-var cosmosDbAccountReaderRole = resourceId(
-  'Microsoft.Authorization/roleDefinitions',
-  'fbdf93bf-df7d-467e-a4d2-9458aa1360c8'
-)
 
-//Role Assignments
+// var cosmosDbDataContributorRoleName = '00000000-0000-0000-0000-000000000002'
+// var cosmosDbAccountReaderRole = resourceId(
+//   'Microsoft.Authorization/roleDefinitions',
+//   'fbdf93bf-df7d-467e-a4d2-9458aa1360c8'
+// )
 
-resource sqlDataContributorRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2023-04-15' existing = {
-  parent: cosmosDBAccount
-  name: cosmosDbDataContributorRoleName
-}
+// //Role Assignments
+
+// resource sqlDataContributorRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2023-04-15' existing = {
+//   parent: cosmosDBAccount
+//   name: cosmosDbDataContributorRoleName
+// }
 
 resource uaiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(resourceGroup().id, applicationIdentity.id, acrPullRole)
@@ -241,25 +255,25 @@ resource formRecgnizerRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   }
 }
 
-resource cosmosDbDataContributorAssignemnt 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2021-10-15' = {
-  name: guid(resourceGroup().id, applicationIdentity.id, cosmosDbDataContributorRoleName)
-  parent: cosmosDBAccount
-  properties: {
-    principalId: applicationIdentity.properties.principalId
-    roleDefinitionId: sqlDataContributorRole.id
-    scope: cosmosDBAccount.id
-  }
-}
+// resource cosmosDbDataContributorAssignemnt 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2021-10-15' = {
+//   name: guid(resourceGroup().id, applicationIdentity.id, cosmosDbDataContributorRoleName)
+//   parent: cosmosDBAccount
+//   properties: {
+//     principalId: applicationIdentity.properties.principalId
+//     roleDefinitionId: sqlDataContributorRole.id
+//     scope: cosmosDBAccount.id
+//   }
+// }
 
-resource cosmosDBAccountReaderRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, applicationIdentity.id, cosmosDbAccountReaderRole)
-  scope: cosmosDBAccount
-  properties: {
-    roleDefinitionId: cosmosDbAccountReaderRole
-    principalId: applicationIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
+// resource cosmosDBAccountReaderRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+//   name: guid(resourceGroup().id, applicationIdentity.id, cosmosDbAccountReaderRole)
+//   scope: cosmosDBAccount
+//   properties: {
+//     roleDefinitionId: cosmosDbAccountReaderRole
+//     principalId: applicationIdentity.properties.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
 
 resource openAiRbac 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(resourceGroup().id, applicationIdentity.id, openAiAllAccessRole)
@@ -623,28 +637,28 @@ module containerRegistryPrivateEndpoint '../modules/privateEndpoint.bicep' = if 
   }
 }
 
-param cosmosDBAccountName string = 'cosmos-${salt}'
-resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
-  name: cosmosDBAccountName
-  tags: tags
-  location: location
-  kind: 'GlobalDocumentDB'
-  properties: {
-    publicNetworkAccess: usePrivateLinks ? 'Disabled' : 'Enabled'
-    databaseAccountOfferType: 'Standard'
-    locations: [
-      {
-        locationName: location
-      }
-    ]
-    enableFreeTier: false
-    isVirtualNetworkFilterEnabled: false
-    capabilities: [
-      {
-        name: 'EnableServerless'
-      }
-    ]
-  }
+// param cosmosDBAccountName string = 'cosmos-${salt}'
+// resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+//   name: cosmosDBAccountName
+//   tags: tags
+//   location: location
+//   kind: 'GlobalDocumentDB'
+//   properties: {
+//     publicNetworkAccess: usePrivateLinks ? 'Disabled' : 'Enabled'
+//     databaseAccountOfferType: 'Standard'
+//     locations: [
+//       {
+//         locationName: location
+//       }
+//     ]
+//     enableFreeTier: false
+//     isVirtualNetworkFilterEnabled: false
+//     capabilities: [
+//       {
+//         name: 'EnableServerless'
+//       }
+//     ]
+//   }
   // resource chatDatabase 'sqlDatabases' = {
   //   name: chatDbName
   //   properties: {
@@ -669,22 +683,22 @@ resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   //     }
   //   }
   // }
-}
+// }
 
-module cosmosAccPrivateEndpoint '../modules/privateEndpoint.bicep' = if (usePrivateLinks) {
-  name: 'ple-${salt}-cosmosdb'
-  params: {
-    dnsZoneName: 'privatelink.documents.azure.com'
-    groupIds: [
-      'Sql'
-    ]
-    location: location
-    name: cosmosDBAccountName
-    subnetId: vnet::privateEndpointSubnet.id
-    vnetId: vnet.id
-    privateLinkServiceId: cosmosDBAccount.id
-  }
-}
+// module cosmosAccPrivateEndpoint '../modules/privateEndpoint.bicep' = if (usePrivateLinks) {
+//   name: 'ple-${salt}-cosmosdb'
+//   params: {
+//     dnsZoneName: 'privatelink.documents.azure.com'
+//     groupIds: [
+//       'Sql'
+//     ]
+//     location: location
+//     name: cosmosDBAccountName
+//     subnetId: vnet::privateEndpointSubnet.id
+//     vnetId: vnet.id
+//     privateLinkServiceId: cosmosDBAccount.id
+//   }
+// }
 
 @description('The name of the Bastion public IP address')
 param bastionPublicIpName string = 'pip-bastion'
@@ -973,10 +987,10 @@ var secrets = concat(
       name: 'default-databaseconnectionstring'
       value: 'mssql+pymssql://${sqlServerAdminLogin}:${sqlServerAdminAccess}@${sqlServerName}.database.windows.net/${defaultDatabaseName}'
     }
-    {
-      name: 'azurecosmosdbconnectionstring'
-      value: 'AccountEndpoint=${cosmosDBAccount.properties.documentEndpoint};AccountKey=${cosmosDBAccount.listKeys().primaryMasterKey};'
-    }
+    // {
+    //   name: 'azurecosmosdbconnectionstring'
+    //   value: 'AccountEndpoint=${cosmosDBAccount.properties.documentEndpoint};AccountKey=${cosmosDBAccount.listKeys().primaryMasterKey};'
+    // }
     {
       name: 'postgresqlconnectionstring'
       value: 'postgresql://${pgsql.properties.administratorLogin}:${sqlServerAdminAccess}@${pgsql.name}.postgres.database.azure.com:5432/${defaultDatabaseName}'
@@ -1044,10 +1058,6 @@ var credentialsEnv = [
     value: 'https://${azureSearchName}.search.windows.net'
   }
   {
-    name: 'AZURE_COSMOSDB_CONNECTION_STRING'
-    secretRef: 'azurecosmosdbconnectionstring'
-  }
-  {
     name: 'AZURE_POSTGRESQL_CONNECTION_STRING'
     secretRef: 'postgresqlconnectionstring'
   }
@@ -1067,14 +1077,14 @@ var credentialsEnv = [
     name: 'APP_AZURE_STORAGE_ACCESS_KEY'
     secretRef: 'blobconnectionkey'
   }
-  {
-    name: 'AZURE_COSMOSDB_ENDPOINT'
-    value: cosmosDBAccount.properties.documentEndpoint
-  }
-  {
-    name: 'AZURE_COSMOSDB_NAME'
-    value: cosmosDBAccountName
-  }
+  // {
+  //   name: 'AZURE_COSMOSDB_ENDPOINT'
+  //   value: cosmosDBAccount.properties.documentEndpoint
+  // }
+  // {
+  //   name: 'AZURE_COSMOSDB_NAME'
+  //   value: cosmosDBAccountName
+  // }
   {
     name: 'AZURE_OPENAI_ENDPOINT'
     value: openAIAccount.properties.endpoint
@@ -1088,6 +1098,10 @@ var credentialsEnv = [
     value: openAIAPIVersion
   }
   {
+    name: 'AZURE_OPENAI_GPT4O_VERSION'
+    value: openAIAPIVersion
+  }
+  {
     name: 'AZURE_OPENAI_EMBEDDING'
     value: openAIEmbendding
   }
@@ -1098,6 +1112,10 @@ var credentialsEnv = [
   {
     name: 'AZURE_OPENAI_CHAT_DEPLOYMENT_NAME'
     value: gptDeploymentName
+  }
+  {
+    name: 'AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME'
+    value: gpt4DeploymentName
   }
   {
     name: 'AZURE_OPENAI_CHAT_DEPLOYMENT_VERSION'
@@ -1228,6 +1246,18 @@ module dnsrecord '../modules/dns-record.bicep' = [for container in items(contain
 ]
 
 
+module dnsrecordsolo '../modules/dns-record.bicep' = [for container in items(containers): if (contains(container.key, 'chat-app')) {
+  name: 'dns-record-${container.key}-solo'
+  scope: resourceGroup(kinapsDomainRG)
+  params: {
+    dnsRecordZone: dnsRecordZone
+    dnsRecordName: 'chat.${environmentName}'
+    dnsCNAME: '${container.key}.${containerAppEnv.properties.defaultDomain}'
+    dnsTXT: [containerAppEnv.properties.customDomainConfiguration.customDomainVerificationId]
+  }
+}
+]
+
 
 // resource myCert 'Microsoft.App/managedEnvironments/managedCertificates@2022-11-01-preview' = {
 //   name: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
@@ -1278,6 +1308,10 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = [
               bindingType: 'Auto'
               name: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
             }
+            {
+              bindingType: 'Auto'
+              name: 'chat.${toLower(environmentName)}.${dnsRecordZone}'
+            }
           ]
         }
       }
@@ -1314,7 +1348,6 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = [
   }
 ]
 
-param managedCertName string = 'managed-cert-single-bicep'
 
 resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = {
   parent: containerAppEnv
@@ -1322,6 +1355,19 @@ resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificat
   location: location
   properties: {
     subjectName: '${toLower(environmentName)}-chat-app.${dnsRecordZone}'
+    domainControlValidation: 'HTTP'
+  }
+  dependsOn: [
+  containerApp
+  ]
+}
+
+resource managedCertificatesolo 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = {
+  parent: containerAppEnv
+  name: 'chat.${toLower(environmentName)}.${dnsRecordZone}'
+  location: location
+  properties: {
+    subjectName: 'chat.${toLower(environmentName)}.${dnsRecordZone}'
     domainControlValidation: 'HTTP'
   }
   dependsOn: [
@@ -1501,13 +1547,14 @@ resource pgsql 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
 
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.properties.loginServer
-output AZURE_COSMOSDB_CONNECTION_STRING string = secrets[4].value
-output AZURE_COSMOSDB_ENDPOINT string = cosmosDBAccount.properties.documentEndpoint
-output AZURE_COSMOSDB_NAME string = cosmosDBAccountName
+// output AZURE_COSMOSDB_CONNECTION_STRING string = secrets[4].value
+// output AZURE_COSMOSDB_ENDPOINT string = cosmosDBAccount.properties.documentEndpoint
+// output AZURE_COSMOSDB_NAME string = cosmosDBAccountName
 output AZURE_DEFAULT_DATABASE_CONNECTION_STRING string = sqlserver.properties.fullyQualifiedDomainName
 output AZURE_OPENAI_API_KEY string = openAIAccount.listKeys().key1
 output AZURE_OPENAI_API_VERSION string = openAIAPIVersion
 output AZURE_OPENAI_CHAT_DEPLOYMENT_NAME string = gptDeploymentName
+output AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME string = gpt4DeploymentName
 output AZURE_OPENAI_CHAT_DEPLOYMENT_VERSION string = openAIAPIVersion
 output AZURE_OPENAI_ENDPOINT string = openAIAccount.properties.endpoint
 output AZURE_OPENAI_INSTANCE_NAME string = openAIAccountName

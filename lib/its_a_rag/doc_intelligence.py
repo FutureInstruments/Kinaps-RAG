@@ -10,8 +10,9 @@
 import logging
 from typing import Any, Iterator, List, Optional
 import os
-import re
+from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
 from langchain_core.documents import Document
+from langchain.prompts import ChatPromptTemplate
 from langchain_community.document_loaders.base import BaseLoader
 from langchain_community.document_loaders.base import BaseBlobParser
 from langchain_community.document_loaders.blob_loaders import Blob
@@ -27,8 +28,9 @@ import base64
 from mimetypes import guess_type
 from openai import AzureOpenAI
 from urllib.parse import urlparse
+import json
 
-MAX_TOKENS = 2000
+MAX_TOKENS = 4000
 
 SYSTEM_CONTEXT = "You are a helpful assistant that describe images in in vivid, precise details. Focus on the graphs, charts, tables, and any flat images, providing clear descriptions of the data they represent. Specify the type of graphs (e.g., bar, line, pie), their axes, colors used, and any notable trends or patterns. Mention the key figures, values, and labels. For each chart, describe how data points change over time or across categories, pointing out any significant peaks, dips, or anomalies. If there are legends, footnotes, or annotations, detail how they contribute to understanding the data."
 
@@ -136,13 +138,24 @@ def understand_image_with_gptv(image_path, caption):
     print('understand image with GPT')
     client = AzureOpenAI(
         api_key=os.getenv('AZURE_OPENAI_API_KEY'),  
-        api_version=os.getenv('AZURE_OPENAI_API_VERSION'),
-        base_url=f"{os.getenv('AZURE_OPENAI_ENDPOINT')}/openai/deployments/{os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')}"
+        api_version=os.getenv('AZURE_OPENAI_GPT4O_VERSION'),
+        base_url=f"{os.getenv('AZURE_OPENAI_ENDPOINT')}/openai/deployments/{os.getenv('AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME')}",
+        max_retries=5,
+        timeout=25
     )
+    # client = AzureChatOpenAI(
+    #         azure_deployment=os.getenv("AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME"),
+    #         api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    #         api_version=os.getenv("AZURE_OPENAI_GPT4O_VERSION"),
+    #         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    #         temperature=0,
+    #         max_retries=5,
+    #         timeout=25
+    # )
     data_url = local_image_to_data_url(image_path)
     try:
         response = client.chat.completions.create(
-                    model=os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME'),
+                    model=os.getenv('AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME'),
                     messages=[
                         { "role": "system", "content": SYSTEM_CONTEXT },
                         { "role": "user", "content": [  
@@ -161,6 +174,15 @@ def understand_image_with_gptv(image_path, caption):
                     max_tokens=MAX_TOKENS
                 )
         img_description = response.choices[0].message.content
+    except AzureOpenAI.APIConnectionError as e:
+        print("The server could not be reached")
+        print(e.__cause__)  # an underlying Exception, likely raised within httpx.
+    except AzureOpenAI.RateLimitError as e:
+        print("A 429 status code was received; we should back off a bit.")
+    except AzureOpenAI.APIStatusError as e:
+        print("Another non-200-range status code was received")
+        print(e.status_code)
+        print(e.response)
     except HttpResponseError as ex:
         if ex.status_code == 400:
             response = json.loads(ex.response._content.decode('utf-8'))

@@ -1,6 +1,5 @@
 # Challenge 0: Learn the Basics
 
-
 ## Introduction
 
 Organizations of all sizes have amassed a plethora of documents over time. While generative AI, such as ChatGPT, can provide answers about general knowledge and historical events with reasonable accuracy, they can also be tailored to answer questions based on a company's internal documents.

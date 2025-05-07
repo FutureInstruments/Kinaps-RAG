@@ -13,18 +13,7 @@ In this challenge, you will interact with a Jupyter Notebook and interact with t
 
 Here you have the high-level steps to complete:
 
-### Step 1. Update your .env file with the additional infomations
-
-Now that you have deployed the Azure AI Foundry resources, you need to update the `.env` file with the necessary information.
-
-So, you need to perform the following steps:
- - Open `.env` and edit the variables for the resources for **Challenge 3: Start Coding** . You can edit variables for other challenges later when you get there.
-
-Here you can find an exmaple of the `.env` file completed:
-
-![ENV Example](../../assets/images/itsarag-challenge3-envexample.png)
-
-### Step 2. Play with the vanilla models
+### Step 1. Play with the vanilla models
 
 In this step, you will interact with the models using Python and APIs as you did using the Azure AI Studio Playground.
 For this challenge we will use the OpenAI python library to interact with the models.
@@ -32,7 +21,7 @@ You will do the some approach using both OpenAI GPT4o and Phi-3-medium-128k-inst
 
 Try to ask the same set of questions you provided in the first part of the challenge and compare the answers.
 
-### Step 3. Add some of the data provided in the dataset and perform some queries to the models
+### Step 2. Add some of the data provided in the dataset and perform some queries to the models
 
 In this step, we will bring our own data to the models and perform some inferences.
 To make the entire process simpler, we will use a LLM Framework: [LangChain.](https://python.langchain.com/v0.2/docs/introduction/)
@@ -62,7 +51,7 @@ the Azure services involved in this steps are the following:
 Let use the same set of documents we highlighted in the previous challange (stored in  the ```its-a-rag/data/fsi/pdf/``` folder of the repository):
 - *2023 FY AMZN.pdf*
 - *2023 FY AAPL.pdf*
-- *2023 FY INTC.pdf*
+- *2023 FY GOOGL.pdf*
 - *2023 FY MSFT.pdf*
 - *2023 FY NVDA.pdf*
 

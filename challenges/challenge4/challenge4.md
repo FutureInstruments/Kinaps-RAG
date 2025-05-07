@@ -48,7 +48,23 @@ The flow implemented for the **retriever phase** is the following:
 
 ## Challenge
 
-You can start now to create the Advanced RAG solution in a notebook.
+This challenge is divided into two parts:
+
+1. Create the required additional resources
+2. Create the Advanced RAG solution in a notebook using the provided modules stored in the './src/itsarag' folder.
+
+### Step 1. Create the required resourses
+
+To start this challenge, you need to create the Azure AI Document Intelligence.
+You can create it using the Azure Portal or using the Azure CLI.
+
+> [!IMPORTANT]  
+> The free tier of Azure AI Document Intelligence has some limitations related to number of page to index for single document: be sure you select the tier S0 for the challenge.
+> the Azure AI Document Intelligence is not available in all the regions for the newer layout model: be sure to select West Europe as region.
+
+### Step 2. Create the Advanced RAG
+
+As step 1 is completed, you can start to create the Advanced RAG solution in a notebook.
 
 Use, as starting point, the provided notebook in challenge 4 folder and the provided modules in the './src/itsarag' folder.
 
@@ -64,9 +80,15 @@ the high level steps are the following:
 ## Success Criteria
 
 - You have a working Advanced RAG solution that works with multimodal prompt.
-- You are able to provide the answers for the proposed questions to the coach using your solution.
+- You are able to provide the answer for the proposed questions to the coach using your solution.
 
 ## Resources
 
 - [Azure AI Document Intelligence](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/?view=doc-intel-4.0.0&branch=release-build-cogserv-forms-recognizer)
 - [Azure AI Document Intelligence Layout model](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-layout?view=doc-intel-4.0.0&tabs=sample-code)
+
+## FAQ
+
+### Resource Not Found error when running Document Intelligence
+
+This error usually happens when you use the wrong api version. Check in the [What's new](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/whats-new?view=doc-intel-4.0.0&tabs=csharp) document, or directly into the Document Intelligence Studio for the right version, as it depends on the region.

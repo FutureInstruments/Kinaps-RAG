@@ -45,7 +45,7 @@ module hackathon 'hackathon.bicep' = {
     acrName: acrName
     chatAppImage: chatAppImage
 //    mockStockAppImage: mockStockAppImage
-    blobIndexerImage: blobIndexerImage
+//    blobIndexerImage: blobIndexerImage
     salt: salt
     tags: tags
 //    skipContainerApps: skipContainerApps
@@ -64,9 +64,9 @@ output APPLICATIONINSIGHTS_CONNECTION_STRING string = hackathon.outputs.APPLICAT
 output AZURE_BLOB_CONTAINER_NAME string = hackathon.outputs.AZURE_BLOB_CONTAINER_NAME
 output AZURE_BLOB_STORAGE_ENDPOINT string = hackathon.outputs.AZURE_BLOB_STORAGE_ENDPOINT
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = hackathon.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
-output AZURE_COSMOSDB_CONNECTION_STRING string = hackathon.outputs.AZURE_COSMOSDB_CONNECTION_STRING
-output AZURE_COSMOSDB_ENDPOINT string = hackathon.outputs.AZURE_COSMOSDB_ENDPOINT
-output AZURE_COSMOSDB_NAME string = hackathon.outputs.AZURE_COSMOSDB_NAME
+// output AZURE_COSMOSDB_CONNECTION_STRING string = hackathon.outputs.AZURE_COSMOSDB_CONNECTION_STRING
+// output AZURE_COSMOSDB_ENDPOINT string = hackathon.outputs.AZURE_COSMOSDB_ENDPOINT
+// output AZURE_COSMOSDB_NAME string = hackathon.outputs.AZURE_COSMOSDB_NAME
 output AZURE_DEFAULT_DATABASE_CONNECTION_STRING string = hackathon.outputs.AZURE_DEFAULT_DATABASE_CONNECTION_STRING
 output AZURE_ENV_NAME string = environmentName
 output AZURE_OPENAI_API_KEY string = hackathon.outputs.AZURE_OPENAI_API_KEY

@@ -107,16 +107,21 @@ class RagAssistant():
 
         def format_docs(docs):
             print('JOIN PAGE CONTENT')
+            print(doc.page_content for doc in docs)
             return "\n\n".join(doc.page_content for doc in docs)
 
         # Use the ChatPromptTemplate to define the prompt that will be sent to the model (Human) remember to include the question and the context
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. "),
-            ("user", "Question: {question}"),
-            ("system", "Context: {context} Answer:"),
+            ("system", "You are an assistant for question-answering tasks. Use only and exclusively the following pieces of retrieved context to answer the question. If the answer cannot be deduced from the retrieved context or if the context is empty, just say that you don't know. Use four sentences maximum and keep the answer concise."),
+            ("user", "question: {question}"),
+            ("system", "context: {context}"),
             ]
         )
 
+        print('DEBUG ----- PROMPT :')
+        for message in prompt:
+            print(message.__repr__())        
+        print(retriever)
         # Define the Chain to get the answer
         self.runnable = (
             {'context': retriever | format_docs, 'question': RunnablePassthrough() }

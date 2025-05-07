@@ -63,7 +63,7 @@ ENV FILENAME=${FILENAME}
 # Sets the working directory to /app
 WORKDIR /app
 
-RUN apt-get update
+# RUN apt-get update
 
 # RUN apt install -y curl
 

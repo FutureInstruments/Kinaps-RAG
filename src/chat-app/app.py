@@ -465,7 +465,7 @@ async def on_chat_resume(thread: ThreadDict):
     app_user = cl.user_session.get("user")
     print('APP USER  ----')
     print(app_user)
-    user_id = app_user.identifier    
+    user_id = str(app_user.identifier).replace('.','-')
     metadata_json = json.loads(json.dumps(app_user.metadata))
     print('METADATA')
     print(metadata_json)
@@ -487,7 +487,7 @@ async def on_chat_resume(thread: ThreadDict):
     chainlit_thread_id = thread.get("id")
     print(chainlit_thread_id)
     app_user = cl.user_session.get("user")
-    user_id = app_user.identifier    
+    user_id = str(app_user.identifier).replace('.','-')
     print('APP USER  ----')
     print(app_user)
 
@@ -535,7 +535,7 @@ async def on_chat_start():
     # await cl.Message(content="Look at this local pdf!", elements=pdfelement).send()
 
     await cl.Message(f"Hello {app_user.identifier}").send()
-    user_id = app_user.identifier
+    user_id = str(app_user.identifier).replace('.','-')
 
 
 
@@ -572,7 +572,7 @@ async def on_message(message: cl.Message):
     print('Thread ID')
     print(chainlit_thread_id)
     app_user = cl.user_session.get("user")
-    user_id = app_user.identifier    
+    user_id = str(app_user.identifier).replace('.','-')
 
     print('APP USER  ----')
     print(app_user)
@@ -589,7 +589,7 @@ async def on_message(message: cl.Message):
     print('set RagAssistant in SESSION DONE')
 
     if not message.elements:
-        # await cl.Message(content="No file attached").send()
+        await cl.Message(content="No file attached").send()
 
         # print('cast assistant')
         # assistant = cast(Assistant, cl.user_session.get("assistant"))  # type: Assistant
@@ -610,7 +610,9 @@ async def on_message(message: cl.Message):
         assistant = cast(RagAssistant, cl.user_session.get("ragassistant"))  # type: RagAssistant
 
         msg = cl.Message(content="")
-
+        resultinvoke = assistant.invoke(message.content)
+        print('DEBUG DEBUG')
+        print(resultinvoke)
         async for chunk in assistant.astream(
             message.content,
             config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
@@ -684,7 +686,9 @@ async def on_message(message: cl.Message):
         assistant = cast(RagAssistant, cl.user_session.get("ragassistant"))  # type: RagAssistant
 
         msg = cl.Message(content="")
-
+        resultinvoke = assistant.invoke(message.content)
+        print('DEBUG DEBUG')
+        print(resultinvoke)
         async for chunk in assistant.astream(
             message.content,
             config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),

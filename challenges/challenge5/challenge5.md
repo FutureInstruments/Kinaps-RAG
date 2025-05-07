@@ -23,7 +23,6 @@ The high level flow of the solution is the following:
 4. b) The Stock agent retrieves the answer from the SQL Database performing a correct SQL query and sends the answer back to the assistant agent.
 5. The assistant agent sends the answer back to the user.
 
-
 ## LangGraph
 
 For this challenge we will use another component of the Langchain family: LangGraph.
@@ -54,9 +53,6 @@ As you have already the SQL Server and the SQL database in the deployed resource
 
 To accomplish this task, you should use SQLAlchemy and its Engine class as it will be used in the LangGraph SQL Agent in the next step.
 
-**NOTE**: Be sure that your IP address is not allowed to access the server.  To enable access, use the Azure Management Portal.
-It may take up to five minutes for this change to take effect.
-
 ### Step 2. Create a Langchain SQL Agent
 
 Now that you have the engine connected to the SQL Database and the data imported, it's time to create your first agent.
@@ -68,8 +64,8 @@ For this task, you should use the LangGraph SQL Databse Toolkit to use the LLM m
 Now it's time to put all the pieces together!
 
 - Create you start agent that will be responsible for receiving the question from the user and decide to which agent the question should be sent.
-- Create the RAG agent that will be responsible for retrieving the answer from the document stored in the Storage account leveregin the Advanced RAG solution you have created in the previous challenge. (You will reuse all the code already created in Challenge 4).
-- Create the Stock agent that will be responsible for retrieving the answer from the SQL Database using the experience you have gained in the previous steps. You will reuse all the code created in the previous step.
+- Create the RAG agent that will be responsible for retrieving the answer from the document stored in the Storage account leveregin the Advanced RAG solution you have created in the previous challenge.
+- Create the Stock agent that will be responsible for retrieving the answer from the SQL Database using the experience you have gained in the previous steps.
 
 Now you should create the LangGraph to define the decision tree logic.
 

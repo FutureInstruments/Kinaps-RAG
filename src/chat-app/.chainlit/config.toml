@@ -70,7 +70,7 @@ cot = "hidden"
 
 # Specify a CSS file that can be used to customize the user interface.
 # The CSS file can be served from the public directory or via an external link.
-# custom_css = "/public/test.css"
+custom_css = "/public/kinaps.css"
 
 # Specify a Javascript file that can be used to customize the user interface.
 # The Javascript file can be served from the public directory.
@@ -85,4 +85,4 @@ cot = "hidden"
 # custom_build = "./public/build"
 
 [meta]
-generated_by = "2.0.602"
+generated_by = "2.5.5"
