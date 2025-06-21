@@ -140,8 +140,8 @@ def understand_image_with_gptv(image_path, caption):
         api_key=os.getenv('AZURE_OPENAI_API_KEY'),  
         api_version=os.getenv('AZURE_OPENAI_GPT4O_VERSION'),
         base_url=f"{os.getenv('AZURE_OPENAI_ENDPOINT')}/openai/deployments/{os.getenv('AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME')}",
-        max_retries=5,
-        timeout=25
+        max_retries=7,
+        timeout=28
     )
     # client = AzureChatOpenAI(
     #         azure_deployment=os.getenv("AZURE_OPENAI_CHAT_GPT4O_DEPLOYMENT_NAME"),
@@ -174,15 +174,6 @@ def understand_image_with_gptv(image_path, caption):
                     max_tokens=MAX_TOKENS
                 )
         img_description = response.choices[0].message.content
-    except AzureOpenAI.APIConnectionError as e:
-        print("The server could not be reached")
-        print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-    except AzureOpenAI.RateLimitError as e:
-        print("A 429 status code was received; we should back off a bit.")
-    except AzureOpenAI.APIStatusError as e:
-        print("Another non-200-range status code was received")
-        print(e.status_code)
-        print(e.response)
     except HttpResponseError as ex:
         if ex.status_code == 400:
             response = json.loads(ex.response._content.decode('utf-8'))

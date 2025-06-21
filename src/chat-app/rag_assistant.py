@@ -2,10 +2,12 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+from operator import itemgetter
+
 from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_community.vectorstores.azuresearch import AzureSearch
 
 # Custom Libraries
@@ -16,7 +18,7 @@ key_credential = os.environ["AZURE_SEARCH_ADMIN_KEY"] if len(os.environ["AZURE_S
 
 
 class RagAssistant():
-    def __init__(self, index_prefix):
+    def __init__(self, index_prefix, memory):
         print('init embendding')
         print(os.getenv("AZURE_OPENAI_EMBEDDING"))
         print(os.getenv("AZURE_OPENAI_API_VERSION"))
@@ -112,7 +114,8 @@ class RagAssistant():
 
         # Use the ChatPromptTemplate to define the prompt that will be sent to the model (Human) remember to include the question and the context
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an assistant for question-answering tasks. Use only and exclusively the following pieces of retrieved context to answer the question. If the answer cannot be deduced from the retrieved context or if the context is empty, just say that you don't know. Use four sentences maximum and keep the answer concise."),
+            ("system", "You are an assistant for question-answering tasks. Use only and exclusively the following pieces of retrieved context to answer the question. You can use history provided to refine the answer by using the history provided. If the answer cannot be deduced from the retrieved context or if the context is empty, just say that you don't know. Use four sentences maximum and keep the answer concise."),
+            MessagesPlaceholder(variable_name="memory_history"),
             ("user", "question: {question}"),
             ("system", "context: {context}"),
             ]
@@ -123,8 +126,13 @@ class RagAssistant():
             print(message.__repr__())        
         print(retriever)
         # Define the Chain to get the answer
+        print("memory variables")
+        print(memory)
         self.runnable = (
-            {'context': retriever | format_docs, 'question': RunnablePassthrough() }
+            RunnablePassthrough.assign(
+                memory_history=RunnableLambda(memory.load_memory_variables) | itemgetter("history")
+            )
+            | {'context': retriever | format_docs, 'question': RunnablePassthrough() }
             | prompt
             | llm
             | StrOutputParser()
@@ -133,5 +141,5 @@ class RagAssistant():
     def astream(self, content, config):
         return self.runnable.astream(content, config)
 
-    def invoke(self, content):
-        return self.runnable.invoke(content)
+    # def invoke(self, content, memory_history):
+    #     return self.runnable.invoke(content, memory_history)

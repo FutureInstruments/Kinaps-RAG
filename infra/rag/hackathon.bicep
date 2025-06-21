@@ -163,8 +163,8 @@ var resourceSubnetName = 'resource-subnet'
 
 param applicationIdentityName string = 'app-identity-${salt}'
 param gpt4ModelName string = 'gpt-4o'
-param gptModelName string = 'gpt-35-turbo'
-param gptModelVersion string = '0125'
+param gptModelName string = 'gpt-4o'
+param gptModelVersion string = '2024-11-20'
 param gpt4ModelVersion string = '2024-11-20'
 param openAIAPIVersion string = '2024-12-01-preview'
 
